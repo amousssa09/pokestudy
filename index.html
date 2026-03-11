@@ -2538,10 +2538,17 @@ function startBattle() {
     }
   }
   
-  // Rival con spawn ponderado
-  const myPokemonLevel = state.jugador.team[myPokemonIdx]?.level || 5;
+  // Cargar todo el equipo como copias independientes
+  const myTeam = JSON.parse(JSON.stringify(state.jugador.team || []));
+  // Empezar con el primer pokémon con HP > 0, o el seleccionado
+  let activeIdx = myPokemonIdx;
+  if (myTeam[activeIdx]?.currentHp <= 0) {
+    activeIdx = myTeam.findIndex(p => p.currentHp > 0);
+    if (activeIdx === -1) activeIdx = 0;
+  }
+  const myPokemon = myTeam[activeIdx];
+  const myPokemonLevel = myPokemon?.level || 5;
   const rivalPokemon = spawnRivalPokemon(myPokemonLevel);
-  const myPokemon = JSON.parse(JSON.stringify(state.jugador.team[myPokemonIdx]));
   
   const rc = RARITY_CONFIG[rivalPokemon.rarity];
   
@@ -2554,18 +2561,20 @@ function startBattle() {
     temarioId,
     preguntas,
     preguntaIdx: 0,
-    myPokemonIdx,
-    myPokemon,
+    myPokemonIdx: activeIdx,
+    myTeam,           // todo el equipo en batalla
+    myPokemon,        // referencia al activo (mismo objeto dentro de myTeam)
     rivalPokemon,
     rivalName: `Rival ${getRandomName()}`,
     log: [`✨ ¡${rivalPokemon.name} [${rc?.label||''}] apareció!`, `¡Ve ${myPokemon.name}!`],
     logIdx: 1,
     pendingMove: null,
     flashcardShown: false,
+    flashcardAnswering: false,
     relacionarState: null,
     rellenarState: null,
-    buffs: { atkTurns:0, defTurns:0 }, // potenciadores activos
-    correctCount: 0, // para monedas
+    buffs: { atkTurns:0, defTurns:0 },
+    correctCount: 0,
   };
   
   // Flash especial si es épico/legendario
@@ -2692,6 +2701,20 @@ function renderBattle() {
       <div class="battle-log-sidebar">
         <div class="battle-log-sidebar-title">📜 Combat Log</div>
         ${logEntries.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+        ${b.myTeam && b.myTeam.length > 1 ? `
+          <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:10px;">
+            <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--muted2); margin-bottom:8px;">🎽 EQUIPO</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              ${b.myTeam.map((p, i) => {
+                const hpPct = Math.max(0, Math.round(p.currentHp / p.maxHp * 100));
+                const isActive = i === b.myPokemonIdx;
+                const fainted = p.currentHp <= 0;
+                const hpColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+                return '<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 6px;border-radius:8px;border:1px solid ' + (isActive?'rgba(255,215,0,0.5)':fainted?'rgba(227,53,13,0.3)':'var(--border)') + ';background:' + (isActive?'rgba(255,215,0,0.08)':fainted?'rgba(227,53,13,0.08)':'rgba(255,255,255,0.03)') + ';min-width:44px;cursor:' + (!fainted&&!isActive&&b.phase==='fighting'?'pointer':'default') + ';opacity:' + (fainted?0.4:1) + ';"' + (!fainted&&!isActive&&b.phase==='fighting'?' onclick="switchPokemon(' + i + ')"':'') + ' title="' + p.name + (fainted?' (debilitado)':isActive?' (activo)':'') + '"><img src="' + p.sprite + '" style="width:32px;height:32px;image-rendering:pixelated;' + (fainted?'filter:grayscale(1)':'') + '"><div style="font-size:8px;font-weight:800;color:' + (isActive?'var(--yellow)':fainted?'var(--red-light)':'var(--muted2)') + ';max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + p.name + '</div><div style="width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="height:100%;width:' + hpPct + '%;background:' + hpColor + ';border-radius:2px;"></div></div></div>';
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
       </div>
     </div>
 
@@ -2736,10 +2759,14 @@ function renderBattleMoves(my) {
           </button>
         `).join('')}
       </div>
-      <div style="display:flex; gap:8px; margin-top:8px;">
+      <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
         <button class="btn btn-ghost btn-sm" style="flex:1; justify-content:center;" onclick="openInventoryModal()" ${canAct?'':' disabled'}>
           🎒 Inventario
         </button>
+        ${b.myTeam && b.myTeam.filter(p => p.currentHp > 0).length > 1 ? `
+        <button class="btn btn-ghost btn-sm" style="flex:1; justify-content:center;" onclick="openSwitchModal(false)" ${canAct?'':' disabled'}>
+          🔄 Cambiar
+        </button>` : ''}
         ${hasBalls ? `<button class="catch-btn" style="flex:1;" onclick="openCatchModal()" ${canAct?'':' disabled'}>
           🔴 Atrapar
         </button>` : `<button class="btn btn-ghost btn-sm" style="flex:1; justify-content:center; opacity:0.4;" onclick="showSection('tienda')" title="Necesitas pokébolas">
@@ -3263,8 +3290,22 @@ function rivalAttack() {
   
   if (b.myPokemon.currentHp <= 0) {
     b.myPokemon.currentHp = 0;
-    if (b.infiniteMode) { endInfiniteMode('faint'); return; }
-    endBattle(false);
+    b.log.push(`💀 ¡${b.myPokemon.name} se debilitó!`);
+    b.logIdx = b.log.length - 1;
+    
+    const aliveTeam = b.myTeam ? b.myTeam.filter(p => p.currentHp > 0) : [];
+    if (aliveTeam.length === 0) {
+      if (b.infiniteMode) { saveState(); renderBattle(); endInfiniteMode('faint'); return; }
+      saveState();
+      renderBattle();
+      endBattle(false);
+      return;
+    }
+    // Quedan pokémon vivos → cambio forzado
+    b.phase = 'switch';
+    saveState();
+    renderBattle();
+    openSwitchModal(true);
     return;
   }
   
@@ -3272,7 +3313,59 @@ function rivalAttack() {
   b.pendingMove = null;
   saveState();
   renderBattle();
-  startRivalTimer(); // rival can attack again after their turn
+  startRivalTimer();
+}
+
+function openSwitchModal(forced = false) {
+  const b = state.battle;
+  if (!b || !b.myTeam) return;
+  stopRivalTimer();
+  
+  const items = b.myTeam.map((p, i) => {
+    const isActive = i === b.myPokemonIdx;
+    const fainted = p.currentHp <= 0;
+    const hpPct = Math.max(0, Math.round(p.currentHp / p.maxHp * 100));
+    const hpColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    const canSelect = !fainted && !isActive;
+    return `
+      <div onclick="${canSelect ? `switchPokemon(${i})` : ''}" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;border:1px solid ${isActive?'rgba(255,215,0,0.5)':fainted?'rgba(227,53,13,0.25)':'var(--border2)'};background:${isActive?'rgba(255,215,0,0.07)':fainted?'rgba(227,53,13,0.05)':'rgba(255,255,255,0.03)'};cursor:${canSelect?'pointer':'default'};opacity:${fainted?0.45:1};transition:all 0.15s;margin-bottom:8px;" ${canSelect?'onmouseover="this.style.background=\'rgba(255,215,0,0.1)\'" onmouseout="this.style.background=\'rgba(255,255,255,0.03)\'"':''}>
+        <img src="${p.sprite}" style="width:48px;height:48px;image-rendering:pixelated;${fainted?'filter:grayscale(1)':''}">
+        <div style="flex:1;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:${isActive?'var(--yellow)':fainted?'var(--red-light)':'var(--white)'};margin-bottom:4px;">${p.name} ${isActive?'(activo)':fainted?'(debilitado)':''}</div>
+          <div style="font-size:11px;color:var(--muted2);margin-bottom:5px;">Nv.${p.level} · HP: ${p.currentHp}/${p.maxHp}</div>
+          <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${hpPct}%;background:${hpColor};border-radius:3px;"></div></div>
+        </div>
+        ${canSelect ? `<div style="font-size:18px;opacity:0.6;">→</div>` : ''}
+      </div>
+    `;
+  }).join('');
+  
+  const title = forced ? '💀 ¡Pokémon debilitado! — Elige sustituto' : '🔄 Cambiar Pokémon';
+  openModal(title, `
+    <div style="font-size:12px;color:var(--muted2);margin-bottom:14px;">${forced ? 'Tu Pokémon se debilitó. <strong style="color:white;">Debes elegir otro</strong> para continuar.' : 'Elige el Pokémon con el que quieres continuar.'}</div>
+    ${items}
+    ${!forced ? `<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px;justify-content:center;" onclick="closeModal(); state.battle.phase='fighting'; startRivalTimer(); renderBattle();">Cancelar</button>` : ''}
+  `);
+}
+
+function switchPokemon(newIdx) {
+  const b = state.battle;
+  if (!b || !b.myTeam) return;
+  const newPokemon = b.myTeam[newIdx];
+  if (!newPokemon || newPokemon.currentHp <= 0) return;
+  
+  const oldName = b.myPokemon.name;
+  b.myPokemonIdx = newIdx;
+  b.myPokemon = b.myTeam[newIdx];
+  b.buffs = { atkTurns: 0, defTurns: 0 }; // los buffs no se transfieren
+  b.log.push(`🔄 ¡${oldName} vuelve! ¡Adelante, ${newPokemon.name}!`);
+  b.logIdx = b.log.length - 1;
+  b.phase = 'fighting';
+  b.pendingMove = null;
+  closeModal();
+  saveState();
+  renderBattle();
+  startRivalTimer();
 }
 
 function renderResultPanel() {
@@ -3365,10 +3458,18 @@ function endBattle(playerWon, fled = false) {
     state.jugador.losses++;
   }
   
-  // Update my pokemon in team
-  const myIdx = b.myPokemonIdx;
-  if (state.jugador.team[myIdx]) {
-    state.jugador.team[myIdx] = { ...state.jugador.team[myIdx], ...b.myPokemon };
+  // Update entire team back to jugador
+  if (b.myTeam) {
+    b.myTeam.forEach((p, i) => {
+      if (state.jugador.team[i]) {
+        state.jugador.team[i] = { ...state.jugador.team[i], ...p };
+      }
+    });
+  } else {
+    const myIdx = b.myPokemonIdx;
+    if (state.jugador.team[myIdx]) {
+      state.jugador.team[myIdx] = { ...state.jugador.team[myIdx], ...b.myPokemon };
+    }
   }
   
   saveState();
@@ -3390,10 +3491,18 @@ function endBattleCleanup(infiniteRespawn = false) {
     showToast(`🎉 ${b.caughtPokemon.name} añadido al equipo!`, 'success');
   }
   
-  // Guardar estado del pokémon activo
-  const myIdx = b.myPokemonIdx;
-  if (state.jugador.team[myIdx]) {
-    state.jugador.team[myIdx] = { ...state.jugador.team[myIdx], ...b.myPokemon };
+  // Guardar estado de todo el equipo
+  if (b.myTeam) {
+    b.myTeam.forEach((p, i) => {
+      if (state.jugador.team[i]) {
+        state.jugador.team[i] = { ...state.jugador.team[i], ...p };
+      }
+    });
+  } else {
+    const myIdx = b.myPokemonIdx;
+    if (state.jugador.team[myIdx]) {
+      state.jugador.team[myIdx] = { ...state.jugador.team[myIdx], ...b.myPokemon };
+    }
   }
   
   if (infiniteRespawn && b.infiniteMode) {
@@ -3405,6 +3514,9 @@ function endBattleCleanup(infiniteRespawn = false) {
     b.caughtPokemon = null;
     b.phase = 'fighting';
     b.pendingMove = null;
+    // Restaurar HP del equipo para la siguiente batalla
+    if (b.myTeam) b.myTeam.forEach(p => { p.currentHp = p.maxHp; });
+    b.myPokemon = b.myTeam ? b.myTeam[b.myPokemonIdx] : b.myPokemon;
     b.log.push(`✨ ¡${newRival.name} [${rc?.label}] apareció!`);
     b.logIdx = b.log.length - 1;
     if (newRival.rarity === 'epic' || newRival.rarity === 'legendary') {
@@ -3434,10 +3546,18 @@ function endInfiniteMode(reason) {
   if (!b) return;
   stopRivalTimer();
   
-  // Guardar estado del pokémon
-  const myIdx = b.myPokemonIdx;
-  if (state.jugador.team[myIdx]) {
-    state.jugador.team[myIdx] = { ...state.jugador.team[myIdx], ...b.myPokemon };
+  // Guardar estado de todo el equipo
+  if (b.myTeam) {
+    b.myTeam.forEach((p, i) => {
+      if (state.jugador.team[i]) {
+        state.jugador.team[i] = { ...state.jugador.team[i], ...p };
+      }
+    });
+  } else {
+    const myIdx = b.myPokemonIdx;
+    if (state.jugador.team[myIdx]) {
+      state.jugador.team[myIdx] = { ...state.jugador.team[myIdx], ...b.myPokemon };
+    }
   }
   if (state.jugador.team) {
     state.jugador.team.forEach(p => { p.currentHp = p.maxHp; });
