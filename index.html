@@ -2756,6 +2756,7 @@ function selectMove(moveIdx) {
   state.battle.phase = 'question';
   // Reset flashcard shown
   state.battle.flashcardShown = false;
+  state.battle.flashcardAnswering = false;
   state.battle.relacionarState = null;
   state.battle.rellenarState = null;
   renderBattle();
@@ -2817,31 +2818,36 @@ function renderQuestionPanel() {
     const frente = q.frente || q.pregunta || '';
     const dorso = q.dorso || q.respuesta || q.reverso || q.back || q.answer || '';
     if (!b.flashcardShown) {
+      // PANTALLA 1: Solo el frente de la tarjeta
       questionHTML = `
         <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:12px;">🃏 FLASHCARD</div>
         <div style="background:linear-gradient(135deg,rgba(59,76,202,0.3),rgba(59,76,202,0.1)); border:1px solid rgba(59,76,202,0.4); border-radius:14px; padding:24px; text-align:center; min-height:120px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-bottom:16px;" onclick="showFlashcardBack()">
           <div style="font-size:15px; font-weight:700; line-height:1.6; color:var(--white);">${escapeHtml(frente)}</div>
         </div>
-        <p style="color:var(--muted2); font-size:12px; text-align:center; margin-bottom:12px;">Memoriza la respuesta y pulsa "Ver respuesta"</p>
+        <p style="color:var(--muted2); font-size:12px; text-align:center; margin-bottom:12px;">Pulsa "Ver respuesta" cuando estés listo</p>
         <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="showFlashcardBack()">👁️ Ver Respuesta</button>
       `;
-    } else {
+      stopRivalTimer();
+    } else if (!b.flashcardAnswering) {
+      // PANTALLA 2: Se muestra la respuesta y el botón "Responder"
       questionHTML = `
-        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:12px;">🃏 MEMORIZA — <span id="flashcardTimer" style="color:white;">5</span>s</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:12px;">🃏 FLASHCARD — Respuesta</div>
         <div style="background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:10px 14px; margin-bottom:10px; font-size:13px; color:var(--muted2);">Concepto: <strong style="color:white;">${escapeHtml(frente)}</strong></div>
-        <div id="flashcardDorsoReveal" style="background:rgba(61,170,86,0.1); border:1px solid rgba(61,170,86,0.3); border-radius:10px; padding:14px; margin-bottom:12px; text-align:center; font-size:15px; font-weight:700; color:#6dda84; line-height:1.5;">
+        <div style="background:rgba(61,170,86,0.1); border:1px solid rgba(61,170,86,0.3); border-radius:10px; padding:20px; margin-bottom:16px; text-align:center; font-size:16px; font-weight:700; color:#6dda84; line-height:1.6;">
           ${dorso ? escapeHtml(dorso) : '<span style="color:var(--muted);font-size:13px;">⚠️ Sin respuesta guardada — edita la flashcard</span>'}
         </div>
-        <div id="flashcardTimerRow" style="text-align:center; margin-bottom:10px;">
-          <div style="height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
-            <div id="flashcardTimerBar" style="height:100%; width:100%; background:var(--yellow); border-radius:2px; transition:width 1s linear;"></div>
-          </div>
-          <div style="font-size:11px; color:var(--muted); margin-top:5px;">La respuesta se ocultará en <span id="flashcardTimerLabel" style="color:var(--yellow); font-weight:700;">5</span>s</div>
-        </div>
-        <textarea class="textarea" id="flashcardAnswer" placeholder="Escribe la respuesta aquí..." style="min-height:80px;" disabled></textarea>
-        <button class="btn btn-yellow" id="flashcardSubmitBtn" style="width:100%; margin-top:10px; justify-content:center; opacity:0.35; pointer-events:none;" onclick="answerFlashcard()">Comprobar →</button>
+        <p style="color:var(--muted2); font-size:12px; text-align:center; margin-bottom:12px;">Memoriza la respuesta y pulsa "Responder" cuando estés listo</p>
+        <button class="btn btn-yellow" style="width:100%; justify-content:center;" onclick="showFlashcardInput()">✏️ Responder</button>
       `;
-      setTimeout(() => startFlashcardCountdown(), 30);
+      stopRivalTimer();
+    } else {
+      // PANTALLA 3: Input para escribir la respuesta
+      questionHTML = `
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:12px;">🃏 FLASHCARD — Escribe la respuesta</div>
+        <div style="background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:var(--muted2);">Concepto: <strong style="color:white;">${escapeHtml(frente)}</strong></div>
+        <textarea class="textarea" id="flashcardAnswer" placeholder="Escribe la respuesta aquí..." style="min-height:90px;"></textarea>
+        <button class="btn btn-yellow" style="width:100%; margin-top:12px; justify-content:center;" onclick="answerFlashcard()">Comprobar →</button>
+      `;
     }
   } else if (tipo === 'relacionar') {
     const pares = q.pares || [];
@@ -2913,6 +2919,12 @@ function answerRellenar() {
 
 function showFlashcardBack() {
   state.battle.flashcardShown = true;
+  state.battle.flashcardAnswering = false;
+  renderBattle();
+}
+
+function showFlashcardInput() {
+  state.battle.flashcardAnswering = true;
   renderBattle();
 }
 
@@ -2974,7 +2986,7 @@ function normalizeText(str) {
   return str
     .toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // quita tildes/acentos
-    .replace(/[^a-z0-9\s]/g, '')                          // quita puntuación
+    .replace(/[^a-z0-9\s]/g, '')                          // quita puntuación, comas, puntos, etc.
     .replace(/\s+/g, ' ')                                  // colapsa espacios
     .trim();
 }
@@ -2985,6 +2997,8 @@ function answerFlashcard() {
   const answer = document.getElementById('flashcardAnswer')?.value || '';
   const dorso  = q.dorso || q.respuesta || q.reverso || q.back || q.answer || '';
   const correct = normalizeText(answer) === normalizeText(dorso);
+  // El rival timer estaba detenido mientras el jugador memorizaba; se retoma en processAnswer
+  startRivalTimer();
   processAnswer(correct, dorso);
 }
 
@@ -3202,7 +3216,7 @@ function processAnswer(correct, correctAnswer) {
   if (correct) {
     // +10 monedas por acierto
     if (state.jugador) {
-      state.jugador.coins = (state.jugador.coins || 0) + 10;
+      state.jugador.coins = (state.jugador.coins || 0) + 25;
       b.correctCount = (b.correctCount || 0) + 1;
     }
     const move = b.myPokemon.moves[b.pendingMove || 0];
@@ -3210,7 +3224,7 @@ function processAnswer(correct, correctAnswer) {
     if (b.buffs?.atkTurns > 0) { damage = Math.floor(damage * 2); b.buffs.atkTurns--; }
     b.rivalPokemon.currentHp = Math.max(0, b.rivalPokemon.currentHp - damage);
     if (move) move.currentPP = Math.max(0, (move.currentPP || move.pp) - 1);
-    b.log.push(`✅ ¡Correcto! +10🪙 · ${b.myPokemon.name} → ${damage} dmg`);
+    b.log.push(`✅ ¡Correcto! +25🪙 · ${b.myPokemon.name} → ${damage} dmg`);
     b.logIdx = b.log.length - 1;
     updateCoinDisplay();
     
@@ -3695,7 +3709,7 @@ function renderTienda() {
         <div style="font-family:'Press Start 2P',monospace; font-size:20px; color:var(--yellow);">${(j.coins||0).toLocaleString()}</div>
       </div>
       <div style="margin-left:auto; font-size:12px; color:var(--muted2); text-align:right; line-height:1.8;">
-        +10 🪙 por pregunta correcta<br>+100 🪙 por victoria en batalla
+        +25 🪙 por pregunta correcta<br>+100 🪙 por victoria en batalla
       </div>
     </div>
 
