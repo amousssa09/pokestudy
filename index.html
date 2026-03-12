@@ -846,6 +846,57 @@ body::after {
   font-size: 9px; color: var(--yellow);
 }
 
+/* ====== KANTO MAP ====== */
+.map-zone { cursor:pointer; transition:all 0.2s; }
+.map-zone.locked { cursor:not-allowed; }
+.zone-info-card { background:var(--card2); border:1px solid var(--border2); border-radius:var(--r-lg); padding:20px; }
+.zone-pokemon-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.zone-pokemon-chip { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:50px; padding:4px 10px; font-size:12px; font-weight:600; }
+.zone-pokemon-chip img { width:28px; height:28px; image-rendering:pixelated; }
+/* ====== EVOLUTION ANIMATION ====== */
+.evo-overlay { position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,0.85); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.evo-flash { animation:evo-flash 0.4s infinite alternate; }
+@keyframes evo-flash { from{opacity:0.3} to{opacity:1} }
+.evo-title { font-family:'Press Start 2P',monospace; font-size:14px; color:var(--yellow); text-align:center; line-height:1.8; text-shadow:0 0 20px rgba(255,215,0,0.6); }
+/* ====== STAT POINTS ====== */
+.stat-point-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.stat-point-label { width:70px; font-size:11px; font-weight:700; color:var(--muted2); text-transform:uppercase; }
+.stat-point-bar { flex:1; height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden; }
+.stat-point-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+.stat-point-val { width:35px; text-align:right; font-size:12px; font-weight:800; }
+.stat-btn { width:22px; height:22px; border-radius:50%; border:1px solid var(--border2); background:rgba(255,255,255,0.08); color:white; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+.stat-btn:hover:not(:disabled) { background:rgba(255,215,0,0.2); border-color:rgba(255,215,0,0.4); }
+.stat-btn:disabled { opacity:0.3; cursor:not-allowed; }
+/* ====== EVENTS BANNER ====== */
+.event-banner { background:linear-gradient(135deg,rgba(255,100,0,0.15),rgba(255,215,0,0.1)); border:1px solid rgba(255,150,0,0.35); border-radius:var(--r-md); padding:10px 16px; display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.event-banner-icon { font-size:22px; }
+.event-banner-text { font-size:12px; font-weight:700; color:#ffaa44; line-height:1.5; }
+/* ====== GIMNASIO ====== */
+.gym-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+.gym-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:16px; text-align:center; transition:all 0.2s; }
+.gym-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+.gym-card.cleared { border-color:rgba(255,215,0,0.4); }
+.gym-badge-icon { font-size:36px; margin-bottom:8px; }
+.gym-leader-name { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--yellow); margin-bottom:4px; }
+.gym-city { font-size:11px; color:var(--muted2); margin-bottom:8px; }
+.gym-req { font-size:10px; color:var(--muted); background:rgba(255,255,255,0.05); border-radius:6px; padding:4px 8px; margin-bottom:10px; }
+/* ====== POKEDEX ====== */
+.pokedex-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:8px; }
+.pokedex-entry { background:var(--card); border:1px solid var(--border); border-radius:var(--r-md); padding:8px; text-align:center; cursor:pointer; transition:all 0.15s; }
+.pokedex-entry:hover { transform:translateY(-2px); border-color:var(--border2); }
+.pokedex-entry.seen { border-color:rgba(59,76,202,0.4); }
+.pokedex-entry.caught { border-color:rgba(255,215,0,0.4); background:rgba(255,215,0,0.05); }
+.pokedex-entry img { width:48px; height:48px; image-rendering:pixelated; }
+.pokedex-num { font-size:8px; color:var(--muted); font-family:'Press Start 2P',monospace; }
+.pokedex-name { font-size:9px; font-weight:700; margin-top:2px; }
+/* ====== EGG ====== */
+.egg-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:14px; text-align:center; transition:all 0.2s; }
+.egg-card:hover { transform:translateY(-2px); }
+.egg-icon { font-size:40px; animation:egg-wobble 2s infinite; }
+@keyframes egg-wobble { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+.egg-progress { height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin:8px 0; }
+.egg-progress-fill { height:100%; background:linear-gradient(90deg,#a855f7,#ec4899); border-radius:3px; transition:width 0.4s; }
+
 /* ====== POKEMON MANAGE ====== */
 .pokemon-manage-grid {
   display: grid;
@@ -902,6 +953,15 @@ body::after {
     </button>
     <button class="nav-item" data-section="tienda" onclick="showSection('tienda')">
       <span class="nav-icon">🛒</span> Tienda
+    </button>
+    <button class="nav-item" data-section="mapa" onclick="showSection('mapa')">
+      <span class="nav-icon">🗺️</span> Mapa
+    </button>
+    <button class="nav-item" data-section="gimnasios" onclick="showSection('gimnasios')">
+      <span class="nav-icon">🏟️</span> Gimnasios
+    </button>
+    <button class="nav-item" data-section="pokedex" onclick="showSection('pokedex')">
+      <span class="nav-icon">📖</span> Pokédex
     </button>
     <button class="nav-item" data-section="jugador" onclick="showSection('jugador')">
       <span class="nav-icon">🎮</span> Perfil
@@ -973,6 +1033,19 @@ body::after {
     <div id="jugadorContent"></div>
   </div>
 
+  <!-- MAPA -->
+  <div class="page" id="section-mapa">
+    <div id="mapaContent"></div>
+  </div>
+  <!-- GIMNASIOS -->
+  <div class="page" id="section-gimnasios">
+    <div id="gimnasiosContent"></div>
+  </div>
+  <!-- POKÉDEX -->
+  <div class="page" id="section-pokedex">
+    <div id="pokedexContent"></div>
+  </div>
+
 </div><!-- /main-content -->
 </div><!-- /app -->
 
@@ -999,7 +1072,10 @@ let state = {
   currentTemarioId: null,
   currentPuntoId: null,
   battle: null,
-  pokemonTab: 'equipo'
+  pokemonTab: 'equipo',
+  events: null,
+  selectedZone: null,
+  gymProgress: {},
 };
 
 // ============================================================
@@ -1173,10 +1249,221 @@ const SHOP_ITEMS = [
   // Escudos (reduce daño recibido 1 turno)
   { id:'xdefense',    name:'X-Defensa',    category:'boost', icon:'🛡️', price:250, desc:'Reduce el daño recibido a la mitad durante 3 preguntas.',turns:3 },
   { id:'xattack',     name:'X-Ataque',     category:'boost', icon:'⚔️', price:250, desc:'Duplica el daño causado durante 3 preguntas.',           turns:3 },
+  { id:'incienso_raro',  name:'Incienso Raro',  category:'incense',icon:'🕯️',price:400,desc:'Aumenta aparición de Pokémon raros durante la sesión.' },
+  { id:'incienso_exp',   name:'Incienso EXP',   category:'incense',icon:'✨',price:600,desc:'Duplica el EXP ganado durante la sesión.' },
+  { id:'incienso_moneda',name:'Incienso Moneda',category:'incense',icon:'💰',price:500,desc:'Aumenta un 50% las monedas ganadas.' },
+  { id:'huevo_comun',    name:'Huevo Común',    category:'egg',    icon:'🥚',price:300,desc:'Incuba con 20 respuestas correctas.',stepsNeeded:20 },
+  { id:'huevo_raro',     name:'Huevo Raro',     category:'egg',    icon:'🌟',price:1000,desc:'Puede contener Pokémon poco comunes. 40 respuestas.',stepsNeeded:40 },
+  { id:'huevo_epico',    name:'Huevo Épico',    category:'egg',    icon:'💎',price:3000,desc:'Puede contener Pokémon épicos. 80 respuestas.',stepsNeeded:80 },
 ];
 
 // STARTER_POKEMON (alias para compatibilidad)
 const STARTER_POKEMON = ALL_POKEMON;
+
+// ============================================================
+// EVOLUTION DATA
+// ============================================================
+const EVOLUTION_DATA = {
+  1:{evolvesTo:2,level:16},2:{evolvesTo:3,level:32},
+  4:{evolvesTo:5,level:16},5:{evolvesTo:6,level:36},
+  7:{evolvesTo:8,level:16},8:{evolvesTo:9,level:36},
+  16:{evolvesTo:17,level:18},17:{evolvesTo:18,level:36},
+  19:{evolvesTo:20,level:20},21:{evolvesTo:22,level:20},
+  23:{evolvesTo:24,level:22},25:{evolvesTo:26,level:36},
+  27:{evolvesTo:28,level:22},29:{evolvesTo:30,level:16},
+  30:{evolvesTo:31,level:36},32:{evolvesTo:33,level:16},
+  33:{evolvesTo:34,level:36},35:{evolvesTo:36,level:36},
+  39:{evolvesTo:40,level:36},41:{evolvesTo:42,level:22},
+  43:{evolvesTo:44,level:21},44:{evolvesTo:45,level:36},
+  46:{evolvesTo:47,level:24},48:{evolvesTo:49,level:31},
+  50:{evolvesTo:51,level:26},52:{evolvesTo:53,level:28},
+  54:{evolvesTo:55,level:33},56:{evolvesTo:57,level:28},
+  58:{evolvesTo:59,level:36},60:{evolvesTo:61,level:25},
+  61:{evolvesTo:62,level:40},63:{evolvesTo:64,level:16},
+  64:{evolvesTo:65,level:36},69:{evolvesTo:70,level:21},
+  70:{evolvesTo:71,level:36},72:{evolvesTo:73,level:30},
+  74:{evolvesTo:75,level:25},75:{evolvesTo:76,level:36},
+  79:{evolvesTo:80,level:37},81:{evolvesTo:82,level:30},
+  84:{evolvesTo:85,level:31},86:{evolvesTo:87,level:34},
+  88:{evolvesTo:89,level:38},92:{evolvesTo:93,level:25},
+  93:{evolvesTo:94,level:36},96:{evolvesTo:97,level:26},
+  98:{evolvesTo:99,level:28},100:{evolvesTo:101,level:30},
+  102:{evolvesTo:103,level:36},104:{evolvesTo:105,level:28},
+  109:{evolvesTo:110,level:35},111:{evolvesTo:112,level:42},
+  116:{evolvesTo:117,level:32},147:{evolvesTo:148,level:30},
+  148:{evolvesTo:149,level:55},
+};
+
+// ============================================================
+// PASSIVE ABILITIES
+// ============================================================
+const PASSIVE_ABILITIES = {
+  1:{name:'Espesura',desc:'Con <33% HP, ataques Planta x1.5.'},
+  2:{name:'Espesura',desc:'Con <33% HP, ataques Planta x1.5.'},
+  3:{name:'Espesura',desc:'Con <33% HP, ataques Planta x1.5.'},
+  4:{name:'Mar Llamas',desc:'Con <33% HP, ataques Fuego x1.5.'},
+  5:{name:'Mar Llamas',desc:'Con <33% HP, ataques Fuego x1.5.'},
+  6:{name:'Mar Llamas',desc:'Con <33% HP, ataques Fuego x1.5.'},
+  7:{name:'Torrente',desc:'Con <33% HP, ataques Agua x1.5.'},
+  8:{name:'Torrente',desc:'Con <33% HP, ataques Agua x1.5.'},
+  9:{name:'Torrente',desc:'Con <33% HP, ataques Agua x1.5.'},
+  25:{name:'Electricidad Estática',desc:'10% de paralizar al rival al recibirle.'},
+  26:{name:'Electricidad Estática',desc:'10% de paralizar al rival al recibirle.'},
+  59:{name:'Intimidación',desc:'Al entrar, reduce Ataque rival.'},
+  65:{name:'Sincronía',desc:'Refleja estados alterados al rival.'},
+  94:{name:'Levitación',desc:'Inmune a ataques Tierra.'},
+  113:{name:'Serotonina',desc:'Recupera 5% HP al responder correctamente.'},
+  133:{name:'Adaptación',desc:'+5% stats al subir de nivel.'},
+  143:{name:'Inmunidad',desc:'No puede envenenarse.'},
+  150:{name:'Presión',desc:'El rival gasta el doble de PP.'},
+  151:{name:'Adaptabilidad',desc:'+20% daño con cualquier tipo.'},
+  _fire:{name:'Mar Llamas',desc:'Con <33% HP, ataques Fuego x1.5.'},
+  _water:{name:'Torrente',desc:'Con <33% HP, ataques Agua x1.5.'},
+  _grass:{name:'Espesura',desc:'Con <33% HP, ataques Planta x1.5.'},
+  _electric:{name:'Electricidad Estática',desc:'10% paralizar al recibir daño.'},
+  _psychic:{name:'Sincronía',desc:'Refleja estados alterados.'},
+  _ghost:{name:'Levitación',desc:'Inmune a Tierra.'},
+  _normal:{name:'Caparazón',desc:'Reduce daño recibido 10%.'},
+  _rock:{name:'Fortaleza',desc:'Reduce daño físico 15%.'},
+  _ground:{name:'Arenilla',desc:'10% cegar al rival al recibirle.'},
+  _poison:{name:'Ponzoña',desc:'10% envenenar al atacarle.'},
+  _fighting:{name:'Tenacidad',desc:'Sobrevive con 1 HP una vez.'},
+  _bug:{name:'Escudo Polvo',desc:'30% reducir precisión rival.'},
+  _ice:{name:'Manto Nieve',desc:'Evasión +10%.'},
+  _dragon:{name:'Fuerza Bruta',desc:'+15% daño en todos los ataques.'},
+  _fairy:{name:'Hada Mágica',desc:'Inmune a estados alterados.'},
+  _flying:{name:'Vista Aguda',desc:'Nunca falla movimientos.'},
+  _steel:{name:'Escudo Acero',desc:'Reduce daño especial 10%.'},
+};
+
+function getPokemonAbility(pokemonId, types) {
+  if (PASSIVE_ABILITIES[pokemonId]) return PASSIVE_ABILITIES[pokemonId];
+  const key = '_' + (types[0] || 'normal');
+  return PASSIVE_ABILITIES[key] || {name:'Escudo',desc:'Reduce daño 5%.'};
+}
+
+// ============================================================
+// TYPE EFFECTIVENESS
+// ============================================================
+const TYPE_CHART = {
+  fire:{grass:2,ice:2,bug:2,steel:2,water:0.5,fire:0.5,rock:0.5,dragon:0.5},
+  water:{fire:2,ground:2,rock:2,water:0.5,grass:0.5,dragon:0.5},
+  grass:{water:2,ground:2,rock:2,fire:0.5,grass:0.5,poison:0.5,flying:0.5,bug:0.5,dragon:0.5,steel:0.5},
+  electric:{water:2,flying:2,grass:0.5,electric:0.5,dragon:0.5,ground:0},
+  psychic:{fighting:2,poison:2,psychic:0.5,steel:0.5,dark:0},
+  ice:{grass:2,ground:2,flying:2,dragon:2,fire:0.5,water:0.5,ice:0.5,steel:0.5},
+  dragon:{dragon:2,steel:0.5,fairy:0},
+  normal:{rock:0.5,steel:0.5,ghost:0},
+  fighting:{normal:2,ice:2,rock:2,dark:2,steel:2,poison:0.5,bug:0.5,psychic:0.5,flying:0.5,fairy:0.5,ghost:0},
+  flying:{grass:2,fighting:2,bug:2,rock:0.5,steel:0.5,electric:0.5},
+  poison:{grass:2,fairy:2,poison:0.5,ground:0.5,rock:0.5,ghost:0.5,steel:0},
+  ground:{fire:2,electric:2,poison:2,rock:2,steel:2,grass:0.5,bug:0.5,flying:0},
+  rock:{fire:2,ice:2,flying:2,bug:2,fighting:0.5,ground:0.5,steel:0.5},
+  bug:{grass:2,psychic:2,dark:2,fire:0.5,fighting:0.5,flying:0.5,ghost:0.5,steel:0.5,fairy:0.5},
+  ghost:{psychic:2,ghost:2,dark:0.5,normal:0},
+  steel:{ice:2,rock:2,fairy:2,fire:0.5,water:0.5,electric:0.5,steel:0.5},
+};
+function getTypeEffectiveness(moveType, defTypes) {
+  const chart = TYPE_CHART[moveType] || {};
+  return defTypes.reduce((m, t) => m * (chart[t] !== undefined ? chart[t] : 1), 1);
+}
+
+// ============================================================
+// KANTO ZONES
+// ============================================================
+const KANTO_ZONES = [
+  {id:'ruta1',name:'Ruta 1',icon:'🌿',color:'#3DAA56',x:300,y:420,w:60,h:28,unlockLevel:1,unlockBadges:0,desc:'La primera ruta de Kanto.',pokemon:[16,19,21],rates:[50,30,20]},
+  {id:'pueblo-paleta',name:'Pueblo Paleta',icon:'🏘️',color:'#aaaaaa',x:300,y:455,w:70,h:28,unlockLevel:1,unlockBadges:0,desc:'Tu ciudad natal.',pokemon:[16,19],rates:[60,40]},
+  {id:'ciudad-plateada',name:'C. Plateada',icon:'🏙️',color:'#8888cc',x:300,y:370,w:75,h:30,unlockLevel:1,unlockBadges:0,desc:'Primera ciudad con Gimnasio.',pokemon:[16,19,21,27],rates:[35,30,20,15]},
+  {id:'ruta2',name:'Ruta 2',icon:'🌲',color:'#2d8a46',x:300,y:315,w:60,h:48,unlockLevel:5,unlockBadges:0,desc:'Camino entre bosques.',pokemon:[16,19,21,43,69],rates:[25,25,20,15,15]},
+  {id:'bosque-jade',name:'Bosque Jade',icon:'🌳',color:'#1a6b30',x:228,y:315,w:66,h:48,unlockLevel:8,unlockBadges:0,desc:'Bosque denso lleno de Bug y Grass.',pokemon:[46,48,69,43,41],rates:[25,25,20,20,10]},
+  {id:'ciudad-celeste',name:'C. Celeste',icon:'🌊',color:'#4592C4',x:300,y:256,w:75,h:30,unlockLevel:10,unlockBadges:1,desc:'Ciudad frente al mar. Líder Misty.',pokemon:[60,72,86,54,79],rates:[30,25,20,15,10]},
+  {id:'ruta3',name:'Ruta 3/4',icon:'⛰️',color:'#8B7355',x:382,y:315,w:65,h:48,unlockLevel:12,unlockBadges:1,desc:'Rutas montañosas.',pokemon:[27,56,21,23,29,32],rates:[20,20,15,15,15,15]},
+  {id:'ciudad-aurora',name:'C. Aurora',icon:'🌆',color:'#cc8844',x:454,y:315,w:75,h:30,unlockLevel:15,unlockBadges:2,desc:'Ciudad eléctrica. Líder Lt. Surge.',pokemon:[81,100,25,84],rates:[35,30,20,15]},
+  {id:'monte-moon',name:'Monte Moon',icon:'🌙',color:'#555577',x:375,y:258,w:68,h:42,unlockLevel:10,unlockBadges:1,desc:'Cueva oscura.',pokemon:[41,74,92,96],rates:[35,30,25,10]},
+  {id:'ciudad-azulona',name:'C. Azulona',icon:'🎨',color:'#cc44aa',x:454,y:372,w:75,h:30,unlockLevel:20,unlockBadges:3,desc:'Ciudad del arte. Líder Erika.',pokemon:[43,44,69,70,102],rates:[25,25,20,15,15]},
+  {id:'torre-pokemon',name:'Torre Pokémon',icon:'👻',color:'#7B62A3',x:465,y:420,w:70,h:28,unlockLevel:22,unlockBadges:3,desc:'Torre de los Pokémon fantasma.',pokemon:[92,93,96,97],rates:[35,35,20,10]},
+  {id:'ciudad-fucsia',name:'C. Fucsia',icon:'🏹',color:'#F366B9',x:358,y:432,w:72,h:28,unlockLevel:28,unlockBadges:4,desc:'Ciudad del Safari. Líder Koga.',pokemon:[23,29,32,41,46,72],rates:[18,18,18,18,15,13]},
+  {id:'safari-zone',name:'Safari Zone',icon:'🦁',color:'#4a9944',x:358,y:467,w:72,h:25,unlockLevel:30,unlockBadges:4,desc:'Zona exclusiva con Pokémon raros.',pokemon:[113,115,128,111,114],rates:[20,20,20,20,20]},
+  {id:'islas-nacar',name:'Islas Nácar',icon:'🏝️',color:'#4592C4',x:200,y:420,w:68,h:25,unlockLevel:25,unlockBadges:4,desc:'Islas remotas con Pokémon Agua.',pokemon:[72,86,87,98,116,117],rates:[22,18,15,15,15,15]},
+  {id:'ciudad-carmina',name:'C. Carmina',icon:'🔥',color:'#E3350D',x:454,y:258,w:75,h:28,unlockLevel:35,unlockBadges:5,desc:'Ciudad volcánica. Líder Blaine.',pokemon:[58,59,78,126],rates:[30,25,25,20]},
+  {id:'cueva-celeste',name:'Cueva Celeste',icon:'🧊',color:'#51C4E7',x:220,y:256,w:72,h:28,unlockLevel:40,unlockBadges:6,desc:'Cueva de hielo. Legendarios.',pokemon:[87,91,124,144],rates:[35,30,25,10]},
+  {id:'ciudad-verde',name:'C. Verde',icon:'🏰',color:'#aa2222',x:300,y:200,w:70,h:28,unlockLevel:45,unlockBadges:7,desc:'Ciudad más grande. Líder Giovanni.',pokemon:[27,28,50,51,104,105],rates:[20,15,20,15,15,15]},
+  {id:'ruta-victoria',name:'Ruta Victoria',icon:'⚔️',color:'#FFD700',x:300,y:150,w:70,h:44,unlockLevel:50,unlockBadges:8,desc:'El camino hacia el Alto Mando.',pokemon:[56,57,63,65,74,76],rates:[18,15,18,12,20,17]},
+  {id:'isla-canela',name:'Isla Canela',icon:'🌋',color:'#8B0000',x:178,y:350,w:64,h:26,unlockLevel:55,unlockBadges:8,desc:'Isla volcánica. Los más poderosos.',pokemon:[59,78,126,146,145,144],rates:[20,18,17,15,15,15]},
+];
+
+// ============================================================
+// EVENTS
+// ============================================================
+const POSSIBLE_EVENTS = [
+  {id:'invasion_ghost',name:'¡Invasión Fantasma!',icon:'👻',desc:'Pokémon Ghost aparecen el doble.',effect:'spawn_boost',effectType:'ghost',effectMult:2,duration:7,color:'#7B62A3'},
+  {id:'lluvia',name:'Lluvia Ácida',icon:'🌧️',desc:'Agua/Veneno más frecuentes. Fuego -20% potencia.',effect:'weather_rain',duration:3,color:'#4592C4'},
+  {id:'ola_calor',name:'Ola de Calor',icon:'☀️',desc:'Pokémon Fuego más frecuentes y +30% potencia.',effect:'weather_sun',duration:3,color:'#FD7D24'},
+  {id:'luna_llena',name:'Luna Llena',icon:'🌕',desc:'Pokémon nocturnos doble aparición y más fuertes.',effect:'moon_boost',duration:2,color:'#aaaaff'},
+  {id:'fiebre_oro',name:'¡Fiebre del Oro!',icon:'💰',desc:'Todas las monedas x2 durante 24h.',effect:'coin_boost',effectMult:2,duration:1,color:'#FFD700'},
+  {id:'tormenta',name:'Tormenta Eléctrica',icon:'⚡',desc:'Pokémon eléctricos y sus ataques +50% potencia.',effect:'weather_thunder',duration:2,color:'#EED535'},
+  {id:'migracion',name:'Migración de Raros',icon:'✨',desc:'Pokémon raros y épicos más frecuentes.',effect:'rare_boost',duration:7,color:'#2196F3'},
+  {id:'dia_entrenador',name:'Día del Entrenador',icon:'🎮',desc:'Todo el EXP ganado x2.',effect:'exp_boost',effectMult:2,duration:1,color:'#3DAA56'},
+];
+
+function initEvents() {
+  if (!state.jugador) return;
+  if (!state.events) state.events = {active:null};
+  const now = Date.now();
+  const ev = state.events.active;
+  if (!ev || now > ev.endsAt) {
+    if (Math.random() < 0.45) {
+      const e = POSSIBLE_EVENTS[Math.floor(Math.random() * POSSIBLE_EVENTS.length)];
+      state.events.active = {...e, startedAt:now, endsAt:now + e.duration * 86400000};
+    } else {
+      state.events.active = null;
+    }
+    saveState();
+  }
+}
+function getActiveEvent() {
+  if (!state.events?.active) return null;
+  if (Date.now() > state.events.active.endsAt) return null;
+  return state.events.active;
+}
+
+// ============================================================
+// GYM DATA
+// ============================================================
+const GYMS = [
+  {id:'brock',city:'C. Plateada',leader:'Brock',type:'rock',badge:'Medalla Roca',badgeIcon:'🪨',reqLevel:10,reqBadges:0,reqCorrect:0,team:[{id:74,level:12},{id:95,level:14}],reward:{coins:500},desc:'Especialista en Pokémon Roca.'},
+  {id:'misty',city:'C. Celeste',leader:'Misty',type:'water',badge:'Medalla Cascada',badgeIcon:'💧',reqLevel:20,reqBadges:1,reqCorrect:0,team:[{id:72,level:18},{id:121,level:21}],reward:{coins:800,pokemonId:54},desc:'La Sirena del Agua.'},
+  {id:'surge',city:'C. Aurora',leader:'Lt. Surge',type:'electric',badge:'Medalla Trueno',badgeIcon:'⚡',reqLevel:28,reqBadges:2,reqCorrect:30,team:[{id:100,level:21},{id:101,level:24},{id:26,level:26}],reward:{coins:1200},desc:'El militar eléctrico.'},
+  {id:'erika',city:'C. Azulona',leader:'Erika',type:'grass',badge:'Medalla Arcoíris',badgeIcon:'🌈',reqLevel:35,reqBadges:3,reqCorrect:60,team:[{id:44,level:29},{id:70,level:24},{id:45,level:29}],reward:{coins:1500,pokemonId:43},desc:'La jardinera tranquila.'},
+  {id:'koga',city:'C. Fucsia',leader:'Koga',type:'poison',badge:'Medalla Alma',badgeIcon:'☠️',reqLevel:42,reqBadges:4,reqCorrect:100,team:[{id:109,level:37},{id:89,level:39},{id:110,level:43}],reward:{coins:2000},desc:'Maestro de venenos.'},
+  {id:'sabrina',city:'C. Plateada',leader:'Sabrina',type:'psychic',badge:'Medalla Pantano',badgeIcon:'🔮',reqLevel:48,reqBadges:5,reqCorrect:150,team:[{id:64,level:38},{id:122,level:37},{id:65,level:43}],reward:{coins:2500,pokemonId:63},desc:'La maestra Psíquica.'},
+  {id:'blaine',city:'C. Carmina',leader:'Blaine',type:'fire',badge:'Medalla Volcán',badgeIcon:'🌋',reqLevel:52,reqBadges:6,reqCorrect:200,team:[{id:58,level:42},{id:126,level:40},{id:78,level:42},{id:59,level:47}],reward:{coins:3000},desc:'El anciano de fuego.'},
+  {id:'giovanni',city:'C. Verde',leader:'Giovanni',type:'ground',badge:'Medalla Tierra',badgeIcon:'🌍',reqLevel:55,reqBadges:7,reqCorrect:250,team:[{id:111,level:45},{id:27,level:42},{id:112,level:45}],reward:{coins:5000},desc:'El Líder del Team Rocket.'},
+];
+
+// ============================================================
+// POKEDEX HELPERS
+// ============================================================
+function getPokedexEntry(pid) {
+  const caught = state.jugador?.pokedex?.caught || [];
+  const seen = state.jugador?.pokedex?.seen || [];
+  if (caught.includes(pid)) return 'caught';
+  if (seen.includes(pid)) return 'seen';
+  return 'unknown';
+}
+function markPokedexSeen(pid) {
+  if (!state.jugador) return;
+  if (!state.jugador.pokedex) state.jugador.pokedex = {caught:[],seen:[]};
+  if (!state.jugador.pokedex.seen.includes(pid)) state.jugador.pokedex.seen.push(pid);
+}
+function markPokedexCaught(pid) {
+  if (!state.jugador) return;
+  if (!state.jugador.pokedex) state.jugador.pokedex = {caught:[],seen:[]};
+  markPokedexSeen(pid);
+  if (!state.jugador.pokedex.caught.includes(pid)) state.jugador.pokedex.caught.push(pid);
+}
+
 
 // MOVIMIENTOS base por tipo
 const BASE_MOVES = {
@@ -1209,6 +1496,7 @@ function init() {
   if (!state.jugador) {
     showWelcome();
   } else {
+    initEvents();
     renderAll();
   }
   renderJsonTemplate();
@@ -1223,7 +1511,6 @@ function loadState() {
 }
 
 function migrateState() {
-  // Fix flashcards that were saved without dorso (e.g. imported with wrong field names)
   (state.temarios || []).forEach(t => {
     (t.puntos || []).forEach(p => {
       (p.preguntas || []).forEach(q => {
@@ -1234,6 +1521,23 @@ function migrateState() {
       });
     });
   });
+  if (state.jugador) {
+    if (!state.jugador.pokedex) state.jugador.pokedex = {caught:[],seen:[]};
+    if (!state.jugador.eggs) state.jugador.eggs = [];
+    if (!state.jugador.badgeList) state.jugador.badgeList = [];
+    if (state.jugador.totalCorrect === undefined) state.jugador.totalCorrect = 0;
+    const allP = [...(state.jugador.team||[]),...(state.jugador.box||[])];
+    allP.forEach(p => {
+      if (!p.ability) p.ability = getPokemonAbility(p.pokemonId, p.types);
+      if (!p.bonusStats) p.bonusStats = {hp:0,atk:0,def:0,spatk:0,spdef:0,spd:0};
+      if (p.statPoints === undefined) p.statPoints = 0;
+      if (p.status === undefined) p.status = null;
+      markPokedexCaught(p.pokemonId);
+    });
+  }
+  if (!state.gymProgress) state.gymProgress = {};
+  if (!state.events) state.events = null;
+  if (!state.selectedZone) state.selectedZone = null;
 }
 
 function saveState() {
@@ -1298,10 +1602,14 @@ function createPlayer() {
     wins: 0,
     losses: 0,
     badges: 0,
-    coins: 200,  // monedas iniciales
-    inventory: { pokeball:5, potion:3 }, // inventario inicial
+    badgeList: [],
+    coins: 200,
+    inventory: { pokeball:5, potion:3 },
     team: starterTeam,
     box: [],
+    eggs: [],
+    pokedex: { caught:[], seen:[] },
+    totalCorrect: 0,
     joinDate: new Date().toISOString()
   };
   
@@ -1454,6 +1762,7 @@ function createPokemonInstance(data, level = 5) {
   const hpBase = data.stats.hp;
   const maxHp = Math.floor(((2 * hpBase * level) / 100) + level + 10);
   const moves = getMoves(data);
+  const ability = getPokemonAbility(data.id, data.types);
   return {
     instanceId: Date.now() + Math.random(),
     pokemonId: data.id,
@@ -1468,8 +1777,12 @@ function createPokemonInstance(data, level = 5) {
     maxHp,
     currentHp: maxHp,
     stats: { ...data.stats },
+    bonusStats: {hp:0,atk:0,def:0,spatk:0,spdef:0,spd:0},
+    statPoints: 0,
     rarity: data.rarity || 'common',
     moves,
+    ability,
+    status: null,
     captured: new Date().toISOString()
   };
 }
@@ -1489,6 +1802,173 @@ function getMoves(data) {
 }
 
 // ============================================================
+// EVOLUTION SYSTEM
+// ============================================================
+function checkEvolution(pokemon, onComplete) {
+  const evo = EVOLUTION_DATA[pokemon.pokemonId];
+  if (!evo || pokemon.level < evo.level) return false;
+  const newData = ALL_POKEMON.find(p => p.id === evo.evolvesTo);
+  if (!newData) return false;
+  showEvolutionAnimation(pokemon, newData, () => {
+    const oldName = pokemon.name;
+    pokemon.pokemonId = newData.id;
+    pokemon.name = newData.name;
+    pokemon.num = newData.num;
+    pokemon.types = newData.types;
+    pokemon.sprite = newData.sprite;
+    pokemon.back = newData.back;
+    pokemon.rarity = newData.rarity;
+    pokemon.ability = getPokemonAbility(newData.id, newData.types);
+    const newMaxHp = Math.floor(((2 * newData.stats.hp * pokemon.level) / 100) + pokemon.level + 10);
+    const diff = newMaxHp - pokemon.maxHp;
+    pokemon.maxHp = newMaxHp;
+    pokemon.currentHp = Math.min(pokemon.currentHp + diff, newMaxHp);
+    pokemon.stats = { ...newData.stats };
+    pokemon.moves = getMoves(newData);
+    markPokedexCaught(newData.id);
+    saveState();
+    showToast(`✨ ¡${oldName} evolucionó a ${newData.name}!`, 'success');
+    if (onComplete) onComplete();
+  });
+  return true;
+}
+
+function showEvolutionAnimation(oldP, newP, onDone) {
+  const el = document.createElement('div');
+  el.className = 'evo-overlay';
+  el.innerHTML = `
+    <div class="evo-title">¡${oldP.name} está evolucionando!</div>
+    <div style="position:relative;width:120px;height:120px;">
+      <img id="evoFrom" src="${oldP.sprite}" style="width:100%;image-rendering:pixelated;" class="evo-flash">
+      <img id="evoTo" src="${newP.sprite}" style="width:100%;image-rendering:pixelated;position:absolute;top:0;left:0;opacity:0;transition:opacity 1.5s;">
+    </div>
+    <div class="evo-title" id="evoMsg">...</div>
+  `;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    const f = document.getElementById('evoFrom');
+    const t = document.getElementById('evoTo');
+    const m = document.getElementById('evoMsg');
+    if (f) f.style.opacity = '0';
+    if (t) t.style.opacity = '1';
+    if (m) m.textContent = `¡Se convirtió en ${newP.name}!`;
+  }, 1500);
+  setTimeout(() => { el.remove(); if (onDone) onDone(); }, 3500);
+}
+
+// ============================================================
+// STAT POINTS
+// ============================================================
+function getEffectiveStat(pokemon, key) {
+  const base = pokemon.stats[key] || 0;
+  const bonus = (pokemon.bonusStats || {})[key] || 0;
+  return Math.floor((base + bonus * 2) * (1 + (pokemon.level - 1) * 0.02));
+}
+
+function assignStatPoint(instanceId, statKey) {
+  const all = [...(state.jugador?.team||[]),...(state.jugador?.box||[])];
+  const p = all.find(p => String(p.instanceId) === String(instanceId));
+  if (!p || (p.statPoints||0) <= 0) { showToast('Sin puntos disponibles', 'error'); return; }
+  if (!p.bonusStats) p.bonusStats = {hp:0,atk:0,def:0,spatk:0,spdef:0,spd:0};
+  p.bonusStats[statKey] = (p.bonusStats[statKey]||0) + 1;
+  p.statPoints--;
+  if (statKey === 'hp') { p.maxHp += 5; p.currentHp = Math.min(p.currentHp + 5, p.maxHp); }
+  saveState();
+  renderPokemonTab();
+}
+
+function openStatPointsModal(instanceId) {
+  const all = [...(state.jugador?.team||[]),...(state.jugador?.box||[])];
+  const p = all.find(pk => String(pk.instanceId) === String(instanceId));
+  if (!p) return;
+  const bonus = p.bonusStats || {hp:0,atk:0,def:0,spatk:0,spdef:0,spd:0};
+  const defs = [
+    {key:'hp',label:'HP',color:'#58C914'},{key:'atk',label:'Ataque',color:'#E3350D'},
+    {key:'def',label:'Defensa',color:'#3B4CCA'},{key:'spatk',label:'Sp.Atk',color:'#F366B9'},
+    {key:'spdef',label:'Sp.Def',color:'#51C4E7'},{key:'spd',label:'Velocidad',color:'#EED535'},
+  ];
+  openModal(`📊 Stats — ${p.name}`, `
+    <div style="text-align:center;margin-bottom:12px;">
+      <img src="${p.sprite}" style="width:64px;height:64px;image-rendering:pixelated;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-top:6px;">
+        Puntos disponibles: <span style="color:var(--green);">${p.statPoints||0}</span>
+      </div>
+    </div>
+    ${defs.map(d => {
+      const base = p.stats[d.key]||0;
+      const bon = bonus[d.key]||0;
+      const total = base + bon*2;
+      return `<div class="stat-point-row">
+        <div class="stat-point-label" style="color:${d.color};">${d.label}</div>
+        <div class="stat-point-bar"><div class="stat-point-fill" style="width:${Math.min(100,Math.round(total/200*100))}%;background:${d.color};"></div></div>
+        <div class="stat-point-val">${total}</div>
+        <button class="stat-btn" onclick="assignStatPoint('${p.instanceId}','${d.key}');openStatPointsModal('${p.instanceId}')" ${(p.statPoints||0)<=0?'disabled':''}>+</button>
+      </div>`;
+    }).join('')}
+    <div style="font-size:11px;color:var(--muted2);margin-top:10px;">Cada punto añade +2 a la estadística elegida.</div>
+  `);
+}
+
+// ============================================================
+// EGG SYSTEM
+// ============================================================
+function hatchEgg(egg) {
+  let pool;
+  if (egg.type === 'huevo_comun') pool = ALL_POKEMON.filter(p => p.rarity === 'common');
+  else if (egg.type === 'huevo_raro') pool = ALL_POKEMON.filter(p => ['uncommon','rare'].includes(p.rarity));
+  else pool = ALL_POKEMON.filter(p => ['rare','epic'].includes(p.rarity));
+  const chosen = pool[Math.floor(Math.random() * pool.length)];
+  const level = Math.max(1, state.jugador?.level || 1);
+  const newP = createPokemonInstance(chosen, level);
+  markPokedexCaught(chosen.id);
+  const j = state.jugador;
+  if ((j.team||[]).length < 6) { j.team.push(newP); }
+  else { j.box = j.box||[]; j.box.push(newP); }
+  showToast(`🥚 ¡El huevo eclosionó! Obtuviste a ${chosen.name}!`, 'success');
+}
+
+function tickEggs(count) {
+  if (!state.jugador?.eggs?.length || !count) return;
+  const hatched = [];
+  state.jugador.eggs = state.jugador.eggs.map(egg => {
+    egg.steps = (egg.steps||0) + count;
+    if (egg.steps >= egg.stepsNeeded) { hatched.push(egg); return null; }
+    return egg;
+  }).filter(Boolean);
+  hatched.forEach(egg => hatchEgg(egg));
+  if (hatched.length) saveState();
+}
+
+// ============================================================
+// ZONE-AWARE SPAWN
+// ============================================================
+function spawnRivalFromZone(playerLevel) {
+  const zone = state.selectedZone ? KANTO_ZONES.find(z => z.id === state.selectedZone) : null;
+  const ev = getActiveEvent();
+  if (zone && zone.pokemon?.length) {
+    let pool = zone.pokemon.map((id, i) => ({ id, rate: zone.rates[i]||10 }));
+    if (ev?.effect === 'spawn_boost') {
+      pool = pool.map(e => {
+        const p = ALL_POKEMON.find(p => p.id === e.id);
+        return p && p.types.includes(ev.effectType) ? {...e, rate: e.rate * ev.effectMult} : e;
+      });
+    }
+    if (ev?.effect === 'rare_boost') {
+      pool = pool.map(e => {
+        const p = ALL_POKEMON.find(p => p.id === e.id);
+        return p && ['rare','epic'].includes(p.rarity) ? {...e, rate: e.rate * 2} : e;
+      });
+    }
+    const total = pool.reduce((s,e) => s+e.rate, 0);
+    let rand = Math.random() * total, chosenId = pool[0].id;
+    for (const e of pool) { rand -= e.rate; if (rand <= 0) { chosenId = e.id; break; } }
+    const data = ALL_POKEMON.find(p => p.id === chosenId) || ALL_POKEMON[0];
+    return createPokemonInstance(data, Math.max(1, playerLevel + randInt(-2, 4)));
+  }
+  return spawnRivalPokemon(playerLevel);
+}
+
+// ============================================================
 // NAVIGATION
 // ============================================================
 function showSection(name) {
@@ -1497,17 +1977,16 @@ function showSection(name) {
   document.getElementById('section-' + name)?.classList.add('active');
   document.querySelector(`[data-section="${name}"]`)?.classList.add('active');
   document.querySelector('.sidebar')?.classList.remove('open');
-  
   updateCoinDisplay();
-  
-  if (name === 'home') {
-    renderHome();
-  }
+  if (name === 'home') renderHome();
   if (name === 'temarios') renderTemarios();
   if (name === 'pokemon') renderPokemon();
   if (name === 'jugar') renderJugar();
   if (name === 'tienda') renderTienda();
   if (name === 'jugador') renderJugador();
+  if (name === 'mapa') renderMapa();
+  if (name === 'gimnasios') renderGimnasios();
+  if (name === 'pokedex') renderPokedex();
 }
 
 function updateCoinDisplay() {
@@ -2334,6 +2813,16 @@ function renderJugar() {
   content.innerHTML = `
     <div class="page-title">⚔️ Sala de Batalla</div>
     
+    ${(() => { const ev = getActiveEvent(); return ev ? `<div class="event-banner"><div class="event-banner-icon">${ev.icon}</div><div><div class="event-banner-text">EVENTO: ${ev.name}</div><div style="font-size:11px;color:var(--muted2);">${ev.desc}</div></div><span style="margin-left:auto;font-size:10px;color:var(--muted2);">${Math.ceil((ev.endsAt-Date.now())/86400000)}d</span></div>` : ''; })()}
+
+    ${(() => {
+      if (state.selectedZone) {
+        const zone = KANTO_ZONES.find(z => z.id === state.selectedZone);
+        return zone ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(61,170,86,0.08);border:1px solid rgba(61,170,86,0.25);border-radius:12px;margin-bottom:16px;"><span style="font-size:20px;">${zone.icon}</span><div style="flex:1;"><div style="font-size:12px;font-weight:800;color:var(--green);">Zona: ${zone.name}</div><div style="font-size:11px;color:var(--muted2);">Los rivales serán de esta zona</div></div><button class="btn btn-ghost btn-sm" onclick="showSection('mapa')">Cambiar →</button></div>` : '';
+      }
+      return `<div style="padding:9px 14px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.18);border-radius:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;"><span>🗺️</span><div style="flex:1;font-size:12px;color:var(--muted2);">Sin zona — Pokémon aleatorios.</div><button class="btn btn-ghost btn-sm" onclick="showSection('mapa')">Elegir zona →</button></div>`;
+    })()}
+
     ${!temariosConPreguntas.length ? `
       <div class="card" style="padding:24px; margin-bottom:20px; border-color:rgba(227,53,13,0.3);">
         <div style="display:flex; align-items:center; gap:12px;">
@@ -2537,7 +3026,8 @@ function startBattle() {
   // Copy entire team for battle
   const battleTeam = JSON.parse(JSON.stringify(team));
   const myPokemon = battleTeam[activeIdx];
-  const rivalPokemon = spawnRivalPokemon(myPokemon.level);
+  const rivalPokemon = spawnRivalFromZone(myPokemon.level);
+  markPokedexSeen(rivalPokemon.pokemonId);
   
   const rc = RARITY_CONFIG[rivalPokemon.rarity];
   
@@ -3397,11 +3887,37 @@ function renderEndedPanel() {
 
 function calcDamage(attacker, defender, move) {
   if (!move || !move.power) return randInt(5, 15);
-  const atk = attacker.stats.atk;
-  const def = defender.stats.def;
+  const atk = getEffectiveStat ? getEffectiveStat(attacker, 'atk') : attacker.stats.atk;
+  const def = getEffectiveStat ? getEffectiveStat(defender, 'def') : defender.stats.def;
   const lvl = attacker.level;
-  let dmg = Math.floor(((2 * lvl / 5 + 2) * move.power * (atk / def)) / 50 + 2);
-  // Random factor
+  let dmg = Math.floor(((2 * lvl / 5 + 2) * move.power * (atk / Math.max(1,def))) / 50 + 2);
+  // Type effectiveness
+  const eff = getTypeEffectiveness(move.type || 'normal', defender.types || ['normal']);
+  dmg = Math.floor(dmg * eff);
+  // Status: burn halves physical attack
+  if (attacker.status === 'burn') dmg = Math.floor(dmg * 0.5);
+  // Event modifiers
+  const ev = getActiveEvent();
+  if (ev) {
+    if (ev.effect === 'weather_sun' && move.type === 'fire') dmg = Math.floor(dmg * 1.3);
+    if (ev.effect === 'weather_rain' && move.type === 'fire') dmg = Math.floor(dmg * 0.8);
+    if (ev.effect === 'weather_rain' && move.type === 'water') dmg = Math.floor(dmg * 1.3);
+    if (ev.effect === 'weather_thunder' && move.type === 'electric') dmg = Math.floor(dmg * 1.5);
+  }
+  // Ability modifiers
+  const ab = attacker.ability;
+  const hpPct = attacker.currentHp / attacker.maxHp;
+  if (ab?.name === 'Fuerza Bruta') dmg = Math.floor(dmg * 1.15);
+  if (ab?.name === 'Adaptabilidad') dmg = Math.floor(dmg * 1.2);
+  if (hpPct < 0.33) {
+    if (ab?.name === 'Mar Llamas' && move.type === 'fire') dmg = Math.floor(dmg * 1.5);
+    if (ab?.name === 'Torrente' && move.type === 'water') dmg = Math.floor(dmg * 1.5);
+    if (ab?.name === 'Espesura' && move.type === 'grass') dmg = Math.floor(dmg * 1.5);
+  }
+  // Defender ability
+  const dab = defender.ability;
+  if (dab?.name === 'Caparazón') dmg = Math.floor(dmg * 0.9);
+  if (dab?.name === 'Fortaleza') dmg = Math.floor(dmg * 0.85);
   dmg = Math.floor(dmg * (randInt(85, 100) / 100));
   return Math.max(1, dmg);
 }
@@ -3422,7 +3938,7 @@ function endBattle(playerWon, fled = false) {
       state.jugador.coins = (state.jugador.coins || 0) + 200;
       updateCoinDisplay();
     }
-    const expGained = b.rivalPokemon.level * 50;
+    const expGained = b.rivalPokemon.level * 50 * (getActiveEvent()?.effect === 'exp_boost' ? 2 : 1);
     b.myPokemon.exp += expGained;
     b.log.push(`💀 ¡${b.rivalPokemon.name} se debilitó!`);
     b.log.push(`⭐ ${b.myPokemon.name} ganó ${expGained} EXP · +200🪙`);
@@ -3433,7 +3949,8 @@ function endBattle(playerWon, fled = false) {
       b.myPokemon.expToNext = b.myPokemon.level * 100;
       b.myPokemon.maxHp = Math.floor(b.myPokemon.maxHp * 1.1);
       b.myPokemon.currentHp = Math.min(b.myPokemon.currentHp + 10, b.myPokemon.maxHp);
-      b.log.push(`🎉 ¡${b.myPokemon.name} subió al nivel ${b.myPokemon.level}!`);
+      b.myPokemon.statPoints = (b.myPokemon.statPoints || 0) + 3;
+      b.log.push(`🎉 ¡${b.myPokemon.name} subió al nivel ${b.myPokemon.level}! +3 puntos de stat`);
     }
     b.logIdx = b.log.length - 1;
     if (!state.jugador.wins) state.jugador.wins = 0;
@@ -3465,66 +3982,75 @@ function endBattle(playerWon, fled = false) {
 function endBattleCleanup(infiniteRespawn = false) {
   const b = state.battle;
   if (!b) return;
-  
-  // Añadir pokemon capturado al equipo/caja
+
+  // Add caught pokémon to team/box + mark pokédex
   if (b.caughtPokemon) {
-    if ((state.jugador.team || []).length < 6) {
-      state.jugador.team.push(b.caughtPokemon);
-    } else {
-      if (!state.jugador.box) state.jugador.box = [];
-      state.jugador.box.push(b.caughtPokemon);
-    }
+    markPokedexCaught(b.caughtPokemon.pokemonId);
+    if ((state.jugador.team || []).length < 6) { state.jugador.team.push(b.caughtPokemon); }
+    else { if (!state.jugador.box) state.jugador.box = []; state.jugador.box.push(b.caughtPokemon); }
     showToast(`🎉 ${b.caughtPokemon.name} añadido al equipo!`, 'success');
   }
-  
-  // Guardar estado de todo el equipo de batalla
+
+  // Sync battle team back to real team
   if (b.battleTeam) {
     b.battleTeam[b.myPokemonIdx] = { ...b.battleTeam[b.myPokemonIdx], ...b.myPokemon };
-    b.battleTeam.forEach((bp, i) => {
-      if (state.jugador.team[i]) {
-        state.jugador.team[i] = { ...state.jugador.team[i], ...bp };
-      }
-    });
+    b.battleTeam.forEach((bp, i) => { if (state.jugador.team[i]) state.jugador.team[i] = { ...state.jugador.team[i], ...bp }; });
   } else {
-    const myIdx = b.myPokemonIdx;
-    if (state.jugador.team[myIdx]) {
-      state.jugador.team[myIdx] = { ...state.jugador.team[myIdx], ...b.myPokemon };
-    }
+    if (state.jugador.team[b.myPokemonIdx]) state.jugador.team[b.myPokemonIdx] = { ...state.jugador.team[b.myPokemonIdx], ...b.myPokemon };
   }
-  
+
+  // Coin event bonus
+  const coinMult = getActiveEvent()?.effect === 'coin_boost' ? 2 : 1;
+  if (coinMult > 1 && b.correctCount) {
+    const bonus = b.correctCount * 20 * (coinMult - 1);
+    state.jugador.coins = (state.jugador.coins||0) + bonus;
+    showToast(`💰 Evento activo! +${bonus} monedas extra`, 'success');
+  }
+
+  // Tick eggs + track total correct
+  tickEggs(b.correctCount || 0);
+  state.jugador.totalCorrect = (state.jugador.totalCorrect||0) + (b.correctCount||0);
+
   if (infiniteRespawn && b.infiniteMode) {
-    // No terminar — spawnear nuevo rival
     const myLevel = b.myPokemon.level;
-    const newRival = spawnRivalPokemon(myLevel);
+    const newRival = spawnRivalFromZone(myLevel);
+    markPokedexSeen(newRival.pokemonId);
     const rc = RARITY_CONFIG[newRival.rarity];
     b.rivalPokemon = newRival;
     b.caughtPokemon = null;
     b.phase = 'fighting';
     b.pendingMove = null;
-    b.log.push(`✨ ¡${newRival.name} [${rc?.label}] apareció!`);
-    // Reset buffs for new fight
     b.buffs = { atkTurns:0, defTurns:0 };
+    b.log.push(`✨ ¡${newRival.name} [${rc?.label}] apareció!`);
     b.logIdx = b.log.length - 1;
-    if (newRival.rarity === 'epic' || newRival.rarity === 'legendary') {
-      showToast(`✨ ¡Apareció un ${rc.label}: ${newRival.name}!`, 'success');
-    }
+    if (newRival.rarity === 'epic' || newRival.rarity === 'legendary') showToast(`✨ ¡Apareció un ${rc.label}: ${newRival.name}!`, 'success');
     saveState();
     renderBattle();
     startRivalTimer();
+    // Check evolution in background after next battle starts
+    const activeP = state.jugador.team[b.myPokemonIdx];
+    if (activeP) checkEvolution(activeP, () => { b.myPokemon = {...b.myPokemon, ...activeP}; });
     return;
   }
-  
-  // Recuperar HP completo
-  if (state.jugador.team) {
-    state.jugador.team.forEach(p => { p.currentHp = p.maxHp; });
+
+  // Check evolutions for all team pokemon
+  let i = 0;
+  function checkNext() {
+    if (i >= (state.jugador.team||[]).length) { finalize(); return; }
+    const p = state.jugador.team[i++];
+    if (!checkEvolution(p, checkNext)) checkNext();
   }
-  
-  state.battle = null;
-  saveState();
-  renderJugar();
-  renderPokemon();
-  updateCoinDisplay();
-  showToast('¡Batalla terminada! Todos los Pokémon recuperaron HP. 💊', 'success');
+  checkNext();
+
+  function finalize() {
+    if (state.jugador.team) state.jugador.team.forEach(p => { p.currentHp = p.maxHp; });
+    state.battle = null;
+    saveState();
+    renderJugar();
+    renderPokemon();
+    updateCoinDisplay();
+    showToast('¡Batalla terminada! Todos los Pokémon recuperaron HP. 💊', 'success');
+  }
 }
 
 function endInfiniteMode(reason) {
@@ -3616,6 +4142,7 @@ function renderJugador() {
     <div class="tabs" style="margin-bottom:24px;">
       <button class="tab-btn active" id="tabBtnPerfil" onclick="switchPerfilTab('perfil')">🎮 Perfil</button>
       <button class="tab-btn" id="tabBtnPokemon" onclick="switchPerfilTab('pokemon')">⚡ Pokémon</button>
+      <button class="tab-btn" id="tabBtnHuevos" onclick="switchPerfilTab('huevos')">🥚 Huevos</button>
       <button class="tab-btn" id="tabBtnBackup" onclick="switchPerfilTab('backup')">💾 Backup</button>
     </div>
 
@@ -3712,6 +4239,9 @@ function renderJugador() {
     </div>
 
     <!-- ===== TAB BACKUP ===== -->
+    <!-- ===== TAB HUEVOS ===== -->
+    <div id="perfilTabHuevos" style="display:none;"></div>
+
     <div id="perfilTabBackup" style="display:none;">
       <div class="player-card" style="margin-bottom:16px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:6px;">📤 Exportar progreso</div>
@@ -3747,15 +4277,39 @@ function renderJugador() {
 }
 
 function switchPerfilTab(tab) {
-  document.getElementById('perfilTabPerfil').style.display = tab === 'perfil' ? 'block' : 'none';
-  document.getElementById('perfilTabPokemon').style.display = tab === 'pokemon' ? 'block' : 'none';
-  document.getElementById('perfilTabBackup').style.display = tab === 'backup' ? 'block' : 'none';
-  document.getElementById('tabBtnPerfil').classList.toggle('active', tab === 'perfil');
-  document.getElementById('tabBtnPokemon').classList.toggle('active', tab === 'pokemon');
-  document.getElementById('tabBtnBackup').classList.toggle('active', tab === 'backup');
+  ['Perfil','Pokemon','Huevos','Backup'].forEach(t => {
+    const el = document.getElementById('perfilTab' + t);
+    const btn = document.getElementById('tabBtn' + t);
+    if (el) el.style.display = 'none';
+    if (btn) btn.classList.remove('active');
+  });
+  const activeEl = document.getElementById('perfilTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  const activeBtn = document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (activeEl) activeEl.style.display = 'block';
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (tab === 'pokemon') switchPokemonTab(state.pokemonTab || 'equipo');
+
+  if (tab === 'huevos') {
+    const j = state.jugador;
+    const eggs = j?.eggs || [];
+    const el = document.getElementById('perfilTabHuevos');
+    if (el) el.innerHTML = eggs.length === 0
+      ? `<div style="text-align:center;padding:40px 20px;"><div style="font-size:48px;margin-bottom:12px;">🥚</div><div style="font-size:13px;color:var(--muted2);">No tienes huevos en incubación.</div><button class="btn btn-yellow" style="margin-top:12px;" onclick="showSection('tienda')">🛒 Comprar huevos</button></div>`
+      : `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;">
+          ${eggs.map(egg => {
+            const item = SHOP_ITEMS.find(i => i.id === egg.type) || {name:'Huevo',icon:'🥚'};
+            const pct = Math.min(100, Math.round((egg.steps/egg.stepsNeeded)*100));
+            return `<div class="egg-card">
+              <div class="egg-icon">${item.icon}</div>
+              <div style="font-size:12px;font-weight:700;margin:6px 0;">${item.name}</div>
+              <div class="egg-progress"><div class="egg-progress-fill" style="width:${pct}%;"></div></div>
+              <div style="font-size:10px;color:var(--muted2);">${egg.steps}/${egg.stepsNeeded} respuestas</div>
+            </div>`;
+          }).join('')}
+        </div>`;
+  }
 }
-
-
 function swapToBox(teamIdx) {
   const j = state.jugador;
   if (!j || j.team.length <= 1) { showToast('Necesitas al menos 1 Pokémon en el equipo', 'error'); return; }
@@ -4018,6 +4572,20 @@ function buyItem(itemId) {
     showToast(`¡No tienes suficientes monedas! Necesitas 🪙${totalCost.toLocaleString()}`, 'error');
     return;
   }
+
+  // Egg items go into the egg incubation queue
+  if (item.category === 'egg') {
+    if (!state.jugador.eggs) state.jugador.eggs = [];
+    for (let i = 0; i < qty; i++) {
+      state.jugador.eggs.push({ type: item.id, steps: 0, stepsNeeded: item.stepsNeeded, id: genId() });
+    }
+    state.jugador.coins -= totalCost;
+    saveState();
+    updateCoinDisplay();
+    showToast(`🥚 Compraste ${qty}x ${item.name}! Responde correctamente para incubar.`, 'success');
+    renderTienda();
+    return;
+  }
   
   state.jugador.coins -= totalCost;
   if (!state.jugador.inventory) state.jugador.inventory = {};
@@ -4063,6 +4631,213 @@ const JSON_TEMPLATE = [
     ]
   }
 ];
+
+// ============================================================
+// MAPA DE KANTO
+// ============================================================
+function renderMapa() {
+  const content = document.getElementById('mapaContent');
+  if (!content) return;
+  const j = state.jugador;
+  const badges = (j?.badgeList||[]).length;
+  const teamLvl = Math.max(...(j?.team||[{level:1}]).map(p=>p.level||1));
+  const ev = getActiveEvent();
+
+  content.innerHTML = `
+    <div class="page-title">🗺️ Mapa de Kanto</div>
+    ${ev ? `<div class="event-banner"><div class="event-banner-icon">${ev.icon}</div><div><div class="event-banner-text">EVENTO: ${ev.name}</div><div style="font-size:11px;color:var(--muted2);">${ev.desc}</div></div></div>` : ''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+      <!-- SVG MAP -->
+      <div class="card" style="padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:12px;">Selecciona una zona de caza</div>
+        <svg viewBox="150 130 410 360" style="width:100%;border-radius:10px;background:linear-gradient(135deg,#1a3a1a,#0d1f2d);">
+          ${KANTO_ZONES.map(zone => {
+            const unlocked = teamLvl >= zone.unlockLevel && badges >= zone.unlockBadges;
+            const selected = state.selectedZone === zone.id;
+            const opacity = unlocked ? 1 : 0.35;
+            const stroke = selected ? '#FFD700' : (unlocked ? zone.color : '#555');
+            const sw = selected ? 3 : 1.5;
+            return `<g onclick="${unlocked ? `selectMapZone('${zone.id}')` : ''}" style="cursor:${unlocked?'pointer':'not-allowed'}">
+              <rect x="${zone.x}" y="${zone.y}" width="${zone.w}" height="${zone.h}" rx="6" fill="${zone.color}" fill-opacity="${selected?0.7:0.4}" stroke="${stroke}" stroke-width="${sw}" opacity="${opacity}"/>
+              <text x="${zone.x + zone.w/2}" y="${zone.y + zone.h/2 - 3}" text-anchor="middle" font-size="8" fill="white" font-weight="bold" opacity="${opacity}">${zone.icon}</text>
+              <text x="${zone.x + zone.w/2}" y="${zone.y + zone.h/2 + 8}" text-anchor="middle" font-size="5" fill="white" opacity="${opacity}">${zone.name}</text>
+              ${!unlocked ? `<text x="${zone.x + zone.w/2}" y="${zone.y + zone.h/2 + 18}" text-anchor="middle" font-size="5" fill="#ff6666">Nv.${zone.unlockLevel}</text>` : ''}
+            </g>`;
+          }).join('')}
+        </svg>
+      </div>
+      <!-- ZONE INFO -->
+      <div>
+        ${(() => {
+          const zone = state.selectedZone ? KANTO_ZONES.find(z => z.id === state.selectedZone) : null;
+          if (!zone) return `<div class="card" style="text-align:center;padding:40px 20px;"><div style="font-size:40px;margin-bottom:12px;">🗺️</div><div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);">Elige una zona</div><div style="font-size:12px;color:var(--muted2);margin-top:8px;">Haz clic en una región del mapa para cazar en ella.</div></div>`;
+          const unlocked = teamLvl >= zone.unlockLevel && badges >= zone.unlockBadges;
+          const caught = j?.pokedex?.caught || [];
+          return `<div class="zone-info-card">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+              <span style="font-size:36px;">${zone.icon}</span>
+              <div><div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${zone.color};">${zone.name}</div><div style="font-size:12px;color:var(--muted2);margin-top:4px;">${zone.desc}</div></div>
+            </div>
+            ${!unlocked ? `<div style="background:rgba(227,53,13,0.1);border:1px solid rgba(227,53,13,0.3);border-radius:8px;padding:10px;font-size:12px;color:var(--red);margin-bottom:12px;">🔒 Requiere nivel ${zone.unlockLevel} y ${zone.unlockBadges} medalla(s)</div>` : ''}
+            <div style="font-size:11px;font-weight:700;color:var(--muted2);margin-bottom:8px;text-transform:uppercase;">Pokémon en esta zona</div>
+            <div class="zone-pokemon-list">
+              ${zone.pokemon.map((id,i) => {
+                const p = ALL_POKEMON.find(pk => pk.id === id);
+                if (!p) return '';
+                const isCaught = caught.includes(id);
+                return `<div class="zone-pokemon-chip" style="${isCaught?'border-color:rgba(255,215,0,0.4);':''}">
+                  <img src="${p.sprite}" onerror="this.style.display='none'">
+                  <span style="${!isCaught?'filter:brightness(0.4)':''}">${p.name}</span>
+                  <span style="font-size:10px;color:var(--muted2);">${zone.rates[i]}%</span>
+                </div>`;
+              }).join('')}
+            </div>
+            ${unlocked ? `<button class="btn btn-yellow" style="width:100%;justify-content:center;margin-top:16px;" onclick="showSection('jugar')">⚔️ Cazar aquí</button>` : ''}
+          </div>`;
+        })()}
+        <div class="card" style="margin-top:16px;padding:14px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:10px;">🏅 Medallas</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${GYMS.map(g => {
+              const cleared = state.gymProgress?.[g.id];
+              return `<div title="${g.badge}" style="font-size:24px;opacity:${cleared?1:0.25};filter:${cleared?'':'grayscale(1)'};">${g.badgeIcon}</div>`;
+            }).join('')}
+          </div>
+          <div style="font-size:11px;color:var(--muted2);margin-top:8px;">${badges}/8 medallas</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function selectMapZone(zoneId) {
+  state.selectedZone = zoneId;
+  saveState();
+  renderMapa();
+  showToast(`Zona seleccionada: ${KANTO_ZONES.find(z=>z.id===zoneId)?.name}`, 'success');
+}
+
+// ============================================================
+// GIMNASIOS
+// ============================================================
+function renderGimnasios() {
+  const content = document.getElementById('gimnasiosContent');
+  if (!content) return;
+  const j = state.jugador;
+  const badges = (j?.badgeList||[]).length;
+  const teamLvl = Math.max(...(j?.team||[{level:1}]).map(p=>p.level||1));
+
+  content.innerHTML = `
+    <div class="page-title">🏟️ Gimnasios de Kanto</div>
+    <div style="font-size:13px;color:var(--muted2);margin-bottom:20px;">Derrota a los 8 líderes para convertirte en Campeón.</div>
+    <div class="gym-grid">
+      ${GYMS.map(gym => {
+        const cleared = state.gymProgress?.[gym.id];
+        const canChallenge = teamLvl >= gym.reqLevel && badges >= gym.reqBadges && (j?.totalCorrect||0) >= gym.reqCorrect;
+        return `<div class="gym-card ${cleared?'cleared':''}">
+          <div class="gym-badge-icon">${gym.badgeIcon}</div>
+          <div class="gym-leader-name">${gym.leader}</div>
+          <div class="gym-city" style="color:var(--muted2);">${gym.city}</div>
+          <div style="display:inline-block;padding:2px 8px;background:rgba(255,255,255,0.08);border-radius:50px;font-size:10px;margin-bottom:8px;">${gym.type.toUpperCase()}</div>
+          <div class="gym-req">Nv.${gym.reqLevel}+ | ${gym.reqBadges}🏅 | ${gym.reqCorrect}✅</div>
+          ${cleared
+            ? `<div style="color:var(--yellow);font-family:'Press Start 2P',monospace;font-size:7px;">✅ SUPERADO</div>`
+            : canChallenge
+              ? `<button class="btn btn-yellow btn-sm" style="width:100%;" onclick="startGymBattle('${gym.id}')">¡Retar!</button>`
+              : `<div style="font-size:10px;color:var(--muted2);">🔒 Bloqueado</div>`}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function startGymBattle(gymId) {
+  const gym = GYMS.find(g => g.id === gymId);
+  if (!gym) return;
+  showToast(`¡Retando a ${gym.leader}! Estudia bien para ganar.`, 'info');
+  state.selectedZone = null;
+  showSection('jugar');
+}
+
+// ============================================================
+// POKÉDEX
+// ============================================================
+function renderPokedex() {
+  const content = document.getElementById('pokedexContent');
+  if (!content) return;
+  const caught = state.jugador?.pokedex?.caught || [];
+  const seen = state.jugador?.pokedex?.seen || [];
+
+  content.innerHTML = `
+    <div class="page-title">📖 Pokédex</div>
+    <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+      <input type="text" class="input" placeholder="Buscar Pokémon..." id="pokedexSearch" oninput="filterPokedex()" style="max-width:260px;font-size:13px;">
+      <div style="display:flex;gap:12px;font-size:13px;font-weight:700;">
+        <span style="color:var(--yellow);">📦 Atrapados: ${caught.length}</span>
+        <span style="color:var(--blue-light);">👁️ Vistos: ${seen.length}</span>
+        <span style="color:var(--muted2);">/ ${ALL_POKEMON.length}</span>
+      </div>
+    </div>
+    <div class="pokedex-grid" id="pokedexGrid">
+      ${ALL_POKEMON.map(p => {
+        const status = getPokedexEntry(p.id);
+        const visible = status !== 'unknown';
+        return `<div class="pokedex-entry ${status}" onclick="showPokedexDetail(${p.id})" data-name="${p.name.toLowerCase()}">
+          <div class="pokedex-num">#${String(p.id).padStart(3,'0')}</div>
+          <img src="${p.sprite}" style="${!visible?'filter:brightness(0) invert(0.2);':''}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'">
+          <div class="pokedex-name" style="${!visible?'color:var(--muted);':''}">${visible ? p.name : '???'}</div>
+          ${status==='caught' ? '<div style="font-size:8px;color:var(--yellow);">✅</div>' : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function filterPokedex() {
+  const val = (document.getElementById('pokedexSearch')?.value || '').toLowerCase();
+  document.querySelectorAll('#pokedexGrid .pokedex-entry').forEach(el => {
+    el.style.display = !val || el.dataset.name?.includes(val) ? '' : 'none';
+  });
+}
+
+function showPokedexDetail(pokemonId) {
+  const p = ALL_POKEMON.find(pk => pk.id === pokemonId);
+  if (!p) return;
+  const status = getPokedexEntry(pokemonId);
+  const visible = status !== 'unknown';
+  const evo = EVOLUTION_DATA[pokemonId];
+  const evoData = evo ? ALL_POKEMON.find(pk => pk.id === evo.evolvesTo) : null;
+  const ability = getPokemonAbility(pokemonId, p.types);
+  openModal(visible ? p.name : '???', `
+    <div style="text-align:center;margin-bottom:16px;">
+      <img src="${p.sprite}" style="width:96px;height:96px;image-rendering:pixelated;${!visible?'filter:brightness(0) invert(0.3);':''}" >
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+        ${(p.types||[]).map(t => `<span class="type-badge type-${t}">${t}</span>`).join('')}
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:${status==='caught'?'var(--yellow)':status==='seen'?'var(--blue-light)':'var(--muted2)'};">
+        ${status==='caught'?'✅ Atrapado':status==='seen'?'👁️ Visto':'❓ No visto'}
+      </div>
+    </div>
+    ${visible ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        ${[['HP',p.stats.hp,'#58C914'],['Ataque',p.stats.atk,'#E3350D'],['Defensa',p.stats.def,'#3B4CCA'],['Sp.Atk',p.stats.spatk,'#F366B9'],['Sp.Def',p.stats.spdef,'#51C4E7'],['Velocidad',p.stats.spd,'#EED535']].map(([k,v,c])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:rgba(255,255,255,0.04);border-radius:6px;">
+            <span style="font-size:10px;color:${c};font-weight:700;">${k}</span>
+            <span style="font-size:12px;font-weight:800;">${v}</span>
+          </div>`).join('')}
+      </div>
+      <div style="padding:10px;background:rgba(255,255,255,0.04);border-radius:8px;margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;color:var(--yellow);margin-bottom:4px;">Habilidad: ${ability.name}</div>
+        <div style="font-size:11px;color:var(--muted2);">${ability.desc}</div>
+      </div>
+      ${evoData ? `<div style="padding:10px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.2);border-radius:8px;display:flex;align-items:center;gap:12px;"><img src="${p.sprite}" style="width:40px;image-rendering:pixelated;"><span style="font-size:18px;">→</span><img src="${evoData.sprite}" style="width:40px;image-rendering:pixelated;"><div style="font-size:11px;"><div style="font-weight:700;">Evoluciona a ${evoData.name}</div><div style="color:var(--muted2);">en nivel ${evo.level}</div></div></div>` : ''}
+    ` : '<div style="text-align:center;color:var(--muted2);font-size:13px;">Debes ver o atrapar este Pokémon para ver sus datos.</div>'}
+  `);
+}
+
+// ============================================================
+// SHOP — update buyItem for eggs
+// ============================================================
+function buyItemV2Override() {
+  // Placeholder — eggs handled inline in buyItem via item.category check
+}
 
 function renderJsonTemplate() {
   const el = document.getElementById('jsonTemplateHome');
