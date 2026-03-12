@@ -2376,36 +2376,23 @@ function renderJugar() {
           </select>
         </div>
         
-        <div class="form-group">
-          <label class="form-label">Tu Pokémon</label>
-          <select class="select" id="battleMyPokemon">
-            ${(j.team || []).map((p,i) => `<option value="${i}">${p.name} (Nv.${p.level}) ${p.currentHp < p.maxHp ? '⚠️' : '✅'}</option>`).join('')}
-          </select>
-        </div>
-        
-        <!-- MODO INFINITO -->
+        <!-- DURACIÓN DE LA PARTIDA (siempre visible) -->
         <div style="border-top:1px solid var(--border); padding-top:14px; margin-top:4px;">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-            <input type="checkbox" id="infiniteMode" onchange="toggleInfiniteOptions()" style="width:16px;height:16px;cursor:pointer;">
-            <label for="infiniteMode" style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); cursor:pointer;">♾️ Modo Infinito</label>
+          <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:10px;">⏱️ Duración de la partida</div>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label class="form-label" style="font-size:11px;">Condición de fin</label>
+            <select class="select" id="infiniteCondition" onchange="toggleInfiniteConditionFields()" style="font-size:12px;">
+              <option value="time">⏱️ Por tiempo (minutos)</option>
+              <option value="rounds">🔁 Por repeticiones del temario</option>
+            </select>
           </div>
-          <div id="infiniteOptions" style="display:none; background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:12px; margin-bottom:12px;">
-            <div style="font-size:12px; color:var(--muted2); margin-bottom:10px;">Los Pokémon rivales reaparecen infinitamente. Elige cuándo parar:</div>
-            <div class="form-group" style="margin-bottom:8px;">
-              <label class="form-label" style="font-size:11px;">Condición de fin</label>
-              <select class="select" id="infiniteCondition" onchange="toggleInfiniteConditionFields()" style="font-size:12px;">
-                <option value="time">⏱️ Por tiempo (minutos)</option>
-                <option value="rounds">🔁 Por repeticiones del temario</option>
-              </select>
-            </div>
-            <div id="infiniteTimeField">
-              <label class="form-label" style="font-size:11px;">Minutos de estudio</label>
-              <input type="number" class="input" id="infiniteMinutes" value="15" min="1" max="180" style="font-size:13px;">
-            </div>
-            <div id="infiniteRoundsField" style="display:none;">
-              <label class="form-label" style="font-size:11px;">Nº de veces a completar el temario</label>
-              <input type="number" class="input" id="infiniteRounds" value="2" min="1" max="20" style="font-size:13px;">
-            </div>
+          <div id="infiniteTimeField">
+            <label class="form-label" style="font-size:11px;">Minutos de estudio</label>
+            <input type="number" class="input" id="infiniteMinutes" value="15" min="1" max="180" style="font-size:13px;">
+          </div>
+          <div id="infiniteRoundsField" style="display:none;">
+            <label class="form-label" style="font-size:11px;">Nº de veces a completar el temario</label>
+            <input type="number" class="input" id="infiniteRounds" value="2" min="1" max="20" style="font-size:13px;">
           </div>
         </div>
         
@@ -2505,8 +2492,7 @@ function startBattle() {
   const temarioId = document.getElementById('battleTemario')?.value;
   const puntoId = document.getElementById('battlePunto')?.value;
   const dificultad = document.getElementById('battleDificultad')?.value;
-  const myPokemonIdx = parseInt(document.getElementById('battleMyPokemon')?.value || '0');
-  const infiniteMode = document.getElementById('infiniteMode')?.checked || false;
+  const infiniteMode = true; // Siempre modo infinito
   
   if (!temarioId) { showToast('Selecciona un temario', 'error'); return; }
   
@@ -2522,12 +2508,22 @@ function startBattle() {
   
   if (!preguntas.length) { showToast('No hay preguntas en este temario/punto', 'error'); return; }
   
+  const team = state.jugador.team || [];
+  if (!team.length) { showToast('No tienes Pokémon en el equipo', 'error'); return; }
+  
+  // Find first non-fainted pokemon
+  const activeIdx = team.findIndex(p => p.currentHp > 0);
+  if (activeIdx === -1) {
+    showToast('¡Todo tu equipo está debilitado! Recupera HP en la tienda.', 'error');
+    return;
+  }
+  
   preguntas = shuffle([...preguntas]);
   const totalPreguntas = preguntas.length;
   
-  // Infinite mode config
+  // Siempre modo infinito con la duración configurada
   let infiniteConfig = null;
-  if (infiniteMode) {
+  {
     const condition = document.getElementById('infiniteCondition')?.value || 'time';
     if (condition === 'time') {
       const mins = parseInt(document.getElementById('infiniteMinutes')?.value || '15');
@@ -2538,17 +2534,10 @@ function startBattle() {
     }
   }
   
-  // Cargar todo el equipo como copias independientes
-  const myTeam = JSON.parse(JSON.stringify(state.jugador.team || []));
-  // Empezar con el primer pokémon con HP > 0, o el seleccionado
-  let activeIdx = myPokemonIdx;
-  if (myTeam[activeIdx]?.currentHp <= 0) {
-    activeIdx = myTeam.findIndex(p => p.currentHp > 0);
-    if (activeIdx === -1) activeIdx = 0;
-  }
-  const myPokemon = myTeam[activeIdx];
-  const myPokemonLevel = myPokemon?.level || 5;
-  const rivalPokemon = spawnRivalPokemon(myPokemonLevel);
+  // Copy entire team for battle
+  const battleTeam = JSON.parse(JSON.stringify(team));
+  const myPokemon = battleTeam[activeIdx];
+  const rivalPokemon = spawnRivalPokemon(myPokemon.level);
   
   const rc = RARITY_CONFIG[rivalPokemon.rarity];
   
@@ -2562,22 +2551,20 @@ function startBattle() {
     preguntas,
     preguntaIdx: 0,
     myPokemonIdx: activeIdx,
-    myTeam,           // todo el equipo en batalla
-    myPokemon,        // referencia al activo (mismo objeto dentro de myTeam)
+    myPokemon,
+    battleTeam,
     rivalPokemon,
     rivalName: `Rival ${getRandomName()}`,
     log: [`✨ ¡${rivalPokemon.name} [${rc?.label||''}] apareció!`, `¡Ve ${myPokemon.name}!`],
     logIdx: 1,
     pendingMove: null,
     flashcardShown: false,
-    flashcardAnswering: false,
     relacionarState: null,
     rellenarState: null,
     buffs: { atkTurns:0, defTurns:0 },
     correctCount: 0,
   };
   
-  // Flash especial si es épico/legendario
   if (rivalPokemon.rarity === 'epic' || rivalPokemon.rarity === 'legendary') {
     showToast(`✨ ¡Apareció un ${rc.label}: ${rivalPokemon.name}!`, 'success');
   }
@@ -2691,6 +2678,11 @@ function renderBattle() {
             </div>
             <div style="margin-top:4px;display:flex;gap:8px;">${my.types.map(t=>`<span class="type-badge type-${t}">${t}</span>`).join('')}</div>
             <div class="exp-bar-track" style="margin-top:6px;"><div class="exp-bar-fill" style="width:${Math.round(my.exp/my.expToNext*100)}%"></div></div>
+            ${b.battleTeam && b.battleTeam.length > 1 ? `
+              <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+                ${b.battleTeam.map((p,i) => `<div title="${p.name} HP:${p.currentHp}/${p.maxHp}" style="width:14px;height:14px;border-radius:50%;border:2px solid ${i===b.myPokemonIdx?'var(--yellow)':'rgba(255,255,255,0.3)'};background:${p.currentHp<=0?'rgba(227,53,13,0.5)':p.currentHp/p.maxHp>0.5?'rgba(88,201,20,0.6)':'rgba(245,197,24,0.6)'};"></div>`).join('')}
+              </div>
+            ` : ''}
           </div>
         </div>
 
@@ -2701,20 +2693,6 @@ function renderBattle() {
       <div class="battle-log-sidebar">
         <div class="battle-log-sidebar-title">📜 Combat Log</div>
         ${logEntries.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
-        ${b.myTeam && b.myTeam.length > 1 ? `
-          <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:10px;">
-            <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--muted2); margin-bottom:8px;">🎽 EQUIPO</div>
-            <div style="display:flex; flex-wrap:wrap; gap:6px;">
-              ${b.myTeam.map((p, i) => {
-                const hpPct = Math.max(0, Math.round(p.currentHp / p.maxHp * 100));
-                const isActive = i === b.myPokemonIdx;
-                const fainted = p.currentHp <= 0;
-                const hpColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-                return '<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 6px;border-radius:8px;border:1px solid ' + (isActive?'rgba(255,215,0,0.5)':fainted?'rgba(227,53,13,0.3)':'var(--border)') + ';background:' + (isActive?'rgba(255,215,0,0.08)':fainted?'rgba(227,53,13,0.08)':'rgba(255,255,255,0.03)') + ';min-width:44px;cursor:' + (!fainted&&!isActive&&b.phase==='fighting'?'pointer':'default') + ';opacity:' + (fainted?0.4:1) + ';"' + (!fainted&&!isActive&&b.phase==='fighting'?' onclick="switchPokemon(' + i + ')"':'') + ' title="' + p.name + (fainted?' (debilitado)':isActive?' (activo)':'') + '"><img src="' + p.sprite + '" style="width:32px;height:32px;image-rendering:pixelated;' + (fainted?'filter:grayscale(1)':'') + '"><div style="font-size:8px;font-weight:800;color:' + (isActive?'var(--yellow)':fainted?'var(--red-light)':'var(--muted2)') + ';max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + p.name + '</div><div style="width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="height:100%;width:' + hpPct + '%;background:' + hpColor + ';border-radius:2px;"></div></div></div>';
-              }).join('')}
-            </div>
-          </div>
-        ` : ''}
       </div>
     </div>
 
@@ -2759,14 +2737,13 @@ function renderBattleMoves(my) {
           </button>
         `).join('')}
       </div>
-      <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+      <div style="display:flex; gap:8px; margin-top:8px;">
         <button class="btn btn-ghost btn-sm" style="flex:1; justify-content:center;" onclick="openInventoryModal()" ${canAct?'':' disabled'}>
           🎒 Inventario
         </button>
-        ${b.myTeam && b.myTeam.filter(p => p.currentHp > 0).length > 1 ? `
-        <button class="btn btn-ghost btn-sm" style="flex:1; justify-content:center;" onclick="openSwitchModal(false)" ${canAct?'':' disabled'}>
-          🔄 Cambiar
-        </button>` : ''}
+        <button class="btn btn-ghost btn-sm" style="flex:1; justify-content:center;" onclick="openTeamModal()" ${canAct?'':' disabled'}>
+          ⚡ Equipo
+        </button>
         ${hasBalls ? `<button class="catch-btn" style="flex:1;" onclick="openCatchModal()" ${canAct?'':' disabled'}>
           🔴 Atrapar
         </button>` : `<button class="btn btn-ghost btn-sm" style="flex:1; justify-content:center; opacity:0.4;" onclick="showSection('tienda')" title="Necesitas pokébolas">
@@ -2781,9 +2758,8 @@ function selectMove(moveIdx) {
   if (!state.battle || state.battle.phase !== 'fighting') return;
   state.battle.pendingMove = moveIdx;
   state.battle.phase = 'question';
-  // Reset flashcard shown
   state.battle.flashcardShown = false;
-  state.battle.flashcardAnswering = false;
+  state.battle.flashcardState = 'front';
   state.battle.relacionarState = null;
   state.battle.rellenarState = null;
   renderBattle();
@@ -2844,37 +2820,40 @@ function renderQuestionPanel() {
   } else if (tipo === 'flashcard') {
     const frente = q.frente || q.pregunta || '';
     const dorso = q.dorso || q.respuesta || q.reverso || q.back || q.answer || '';
-    if (!b.flashcardShown) {
-      // PANTALLA 1: Solo el frente de la tarjeta
+    const flashState = b.flashcardState || 'front'; // 'front' | 'shown' | 'writing'
+
+    if (flashState === 'front') {
       questionHTML = `
         <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:12px;">🃏 FLASHCARD</div>
-        <div style="background:linear-gradient(135deg,rgba(59,76,202,0.3),rgba(59,76,202,0.1)); border:1px solid rgba(59,76,202,0.4); border-radius:14px; padding:24px; text-align:center; min-height:120px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-bottom:16px;" onclick="showFlashcardBack()">
+        <div style="background:linear-gradient(135deg,rgba(59,76,202,0.3),rgba(59,76,202,0.1)); border:1px solid rgba(59,76,202,0.4); border-radius:14px; padding:24px; text-align:center; min-height:120px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-bottom:16px;" onclick="setFlashcardState('shown')">
           <div style="font-size:15px; font-weight:700; line-height:1.6; color:var(--white);">${escapeHtml(frente)}</div>
         </div>
-        <p style="color:var(--muted2); font-size:12px; text-align:center; margin-bottom:12px;">Pulsa "Ver respuesta" cuando estés listo</p>
-        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="showFlashcardBack()">👁️ Ver Respuesta</button>
+        <p style="color:var(--muted2); font-size:12px; text-align:center; margin-bottom:12px;">Memoriza la respuesta y pulsa "Ver respuesta"</p>
+        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="setFlashcardState('shown')">👁️ Ver Respuesta</button>
       `;
-      stopRivalTimer();
-    } else if (!b.flashcardAnswering) {
-      // PANTALLA 2: Se muestra la respuesta y el botón "Responder"
+      // Rival timer parado mientras el jugador lee el frente
+      setTimeout(() => stopRivalTimer(), 0);
+    } else if (flashState === 'shown') {
       questionHTML = `
-        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:12px;">🃏 FLASHCARD — Respuesta</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:12px;">🃏 FLASHCARD — Memoriza</div>
         <div style="background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:10px 14px; margin-bottom:10px; font-size:13px; color:var(--muted2);">Concepto: <strong style="color:white;">${escapeHtml(frente)}</strong></div>
-        <div style="background:rgba(61,170,86,0.1); border:1px solid rgba(61,170,86,0.3); border-radius:10px; padding:20px; margin-bottom:16px; text-align:center; font-size:16px; font-weight:700; color:#6dda84; line-height:1.6;">
+        <div style="background:rgba(61,170,86,0.1); border:1px solid rgba(61,170,86,0.3); border-radius:10px; padding:14px; margin-bottom:14px; text-align:center; font-size:15px; font-weight:700; color:#6dda84; line-height:1.5;">
           ${dorso ? escapeHtml(dorso) : '<span style="color:var(--muted);font-size:13px;">⚠️ Sin respuesta guardada — edita la flashcard</span>'}
         </div>
-        <p style="color:var(--muted2); font-size:12px; text-align:center; margin-bottom:12px;">Memoriza la respuesta y pulsa "Responder" cuando estés listo</p>
-        <button class="btn btn-yellow" style="width:100%; justify-content:center;" onclick="showFlashcardInput()">✏️ Responder</button>
+        <button class="btn btn-yellow" style="width:100%; justify-content:center;" onclick="setFlashcardState('writing')">✏️ Responder</button>
       `;
-      stopRivalTimer();
+      // Rival timer parado mientras el jugador ve la respuesta
+      setTimeout(() => stopRivalTimer(), 0);
     } else {
-      // PANTALLA 3: Input para escribir la respuesta
+      // writing state: only show the input, no answer
       questionHTML = `
         <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:12px;">🃏 FLASHCARD — Escribe la respuesta</div>
         <div style="background:rgba(255,215,0,0.05); border:1px solid rgba(255,215,0,0.2); border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:var(--muted2);">Concepto: <strong style="color:white;">${escapeHtml(frente)}</strong></div>
-        <textarea class="textarea" id="flashcardAnswer" placeholder="Escribe la respuesta aquí..." style="min-height:90px;"></textarea>
-        <button class="btn btn-yellow" style="width:100%; margin-top:12px; justify-content:center;" onclick="answerFlashcard()">Comprobar →</button>
+        <textarea class="textarea" id="flashcardAnswer" placeholder="Escribe la respuesta aquí..." style="min-height:80px;"></textarea>
+        <button class="btn btn-yellow" style="width:100%; margin-top:10px; justify-content:center;" onclick="answerFlashcard()">Comprobar →</button>
       `;
+      // Rival timer activo al escribir
+      setTimeout(() => { if (!rivalTimerInterval) startRivalTimer(); }, 0);
     }
   } else if (tipo === 'relacionar') {
     const pares = q.pares || [];
@@ -2939,20 +2918,25 @@ function answerRellenar() {
   respuestas.forEach((r, i) => {
     const input = document.getElementById(`rellena_${i}`);
     if (!input) { allCorrect = false; return; }
-    if (input.value.trim().toLowerCase() !== r.toLowerCase()) allCorrect = false;
+    if (normalizeText(input.value) !== normalizeText(r)) allCorrect = false;
   });
   processAnswer(allCorrect, respuestas.join(', '));
 }
 
-function showFlashcardBack() {
-  state.battle.flashcardShown = true;
-  state.battle.flashcardAnswering = false;
+function setFlashcardState(newState) {
+  const b = state.battle;
+  if (!b) return;
+  b.flashcardState = newState;
+  b.flashcardShown = (newState !== 'front'); // compat
   renderBattle();
 }
 
+function showFlashcardBack() {
+  setFlashcardState('shown');
+}
+
 function showFlashcardInput() {
-  state.battle.flashcardAnswering = true;
-  renderBattle();
+  setFlashcardState('writing');
 }
 
 function startFlashcardCountdown() {
@@ -3010,10 +2994,13 @@ function startFlashcardCountdown() {
 }
 
 function normalizeText(str) {
+  if (!str) return '';
   return str
+    .toString()
     .toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // quita tildes/acentos
-    .replace(/[^a-z0-9\s]/g, '')                          // quita puntuación, comas, puntos, etc.
+    .replace(/[.,;:!?¡¿\-_'"()\[\]{}]/g, ' ')           // puntuación → espacio
+    .replace(/[^a-z0-9\s]/g, '')                          // quita resto de caracteres especiales
     .replace(/\s+/g, ' ')                                  // colapsa espacios
     .trim();
 }
@@ -3024,8 +3011,6 @@ function answerFlashcard() {
   const answer = document.getElementById('flashcardAnswer')?.value || '';
   const dorso  = q.dorso || q.respuesta || q.reverso || q.back || q.answer || '';
   const correct = normalizeText(answer) === normalizeText(dorso);
-  // El rival timer estaba detenido mientras el jugador memorizaba; se retoma en processAnswer
-  startRivalTimer();
   processAnswer(correct, dorso);
 }
 
@@ -3137,6 +3122,55 @@ function useItem(itemId) {
   showToast(`Usaste ${item.icon} ${item.name}`, 'success');
 }
 
+function openTeamModal() {
+  const b = state.battle;
+  if (!b || b.phase !== 'fighting') return;
+  const team = b.battleTeam || [];
+
+  function teamModalHTML() {
+    return `
+      <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:14px;">⚡ Equipo en batalla</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-bottom:16px;">
+        ${team.map((p, i) => {
+          const isActive = i === b.myPokemonIdx;
+          const fainted = p.currentHp <= 0;
+          const hpPct = Math.round(p.currentHp / p.maxHp * 100);
+          const hpColor = hpPct > 50 ? 'var(--green)' : hpPct > 20 ? 'var(--yellow)' : 'var(--red)';
+          return `
+            <div style="background:var(--card);border:2px solid ${isActive ? 'var(--yellow)' : fainted ? 'rgba(227,53,13,0.4)' : 'var(--border)'};border-radius:var(--r-md);padding:10px 8px;text-align:center;opacity:${fainted?'0.5':'1'};">
+              ${isActive ? '<div style="font-size:9px;color:var(--yellow);font-weight:800;margin-bottom:4px;">▶ ACTIVO</div>' : ''}
+              <img src="${p.sprite}" style="width:52px;height:52px;image-rendering:pixelated;${fainted?'filter:grayscale(1)':''}" alt="${p.name}">
+              <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:${fainted?'var(--muted)':'var(--yellow)'};margin-top:4px;">${p.name}</div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">Nv.${p.level}</div>
+              <div style="font-size:10px;color:${hpColor};font-weight:700;margin-bottom:6px;">${fainted ? '💀 Debilitado' : `HP ${p.currentHp}/${p.maxHp}`}</div>
+              ${!isActive && !fainted ? `<button class="btn btn-yellow btn-sm" style="width:100%;justify-content:center;font-size:10px;" onclick="switchBattlePokemon(${i})">↔ Cambiar</button>` : ''}
+              ${fainted ? '<div style="font-size:10px;color:var(--muted2);">No disponible</div>' : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <p style="font-size:12px;color:var(--muted2);text-align:center;">Cambia de Pokémon activo durante la batalla.</p>
+    `;
+  }
+
+  openModal('⚡ Gestionar Equipo', teamModalHTML());
+}
+
+function switchBattlePokemon(newIdx) {
+  const b = state.battle;
+  if (!b) return;
+  // Sync current pokemon stats back to battleTeam
+  b.battleTeam[b.myPokemonIdx] = { ...b.battleTeam[b.myPokemonIdx], ...b.myPokemon };
+  b.myPokemonIdx = newIdx;
+  b.myPokemon = b.battleTeam[newIdx];
+  b.log.push(`↔ ¡Cambio de Pokémon! ¡Adelante, ${b.myPokemon.name}!`);
+  b.logIdx = b.log.length - 1;
+  closeModal();
+  saveState();
+  renderBattle();
+  showToast(`¡${b.myPokemon.name} al campo de batalla!`, 'success');
+}
+
 function openCatchModal() {
   const b = state.battle;
   if (!b || b.phase !== 'fighting') return;
@@ -3241,9 +3275,9 @@ function processAnswer(correct, correctAnswer) {
   }
 
   if (correct) {
-    // +10 monedas por acierto
+    // +20 monedas por acierto
     if (state.jugador) {
-      state.jugador.coins = (state.jugador.coins || 0) + 25;
+      state.jugador.coins = (state.jugador.coins || 0) + 20;
       b.correctCount = (b.correctCount || 0) + 1;
     }
     const move = b.myPokemon.moves[b.pendingMove || 0];
@@ -3251,7 +3285,7 @@ function processAnswer(correct, correctAnswer) {
     if (b.buffs?.atkTurns > 0) { damage = Math.floor(damage * 2); b.buffs.atkTurns--; }
     b.rivalPokemon.currentHp = Math.max(0, b.rivalPokemon.currentHp - damage);
     if (move) move.currentPP = Math.max(0, (move.currentPP || move.pp) - 1);
-    b.log.push(`✅ ¡Correcto! +25🪙 · ${b.myPokemon.name} → ${damage} dmg`);
+    b.log.push(`✅ ¡Correcto! +20🪙 · ${b.myPokemon.name} → ${damage} dmg`);
     b.logIdx = b.log.length - 1;
     updateCoinDisplay();
     
@@ -3290,79 +3324,33 @@ function rivalAttack() {
   
   if (b.myPokemon.currentHp <= 0) {
     b.myPokemon.currentHp = 0;
+    // Sync fainted pokemon back to battleTeam
+    b.battleTeam[b.myPokemonIdx] = { ...b.battleTeam[b.myPokemonIdx], ...b.myPokemon };
     b.log.push(`💀 ¡${b.myPokemon.name} se debilitó!`);
-    b.logIdx = b.log.length - 1;
     
-    const aliveTeam = b.myTeam ? b.myTeam.filter(p => p.currentHp > 0) : [];
-    if (aliveTeam.length === 0) {
-      if (b.infiniteMode) { saveState(); renderBattle(); endInfiniteMode('faint'); return; }
+    // Find next available pokemon
+    const nextIdx = b.battleTeam.findIndex((p, i) => i !== b.myPokemonIdx && p.currentHp > 0);
+    if (nextIdx !== -1) {
+      b.myPokemonIdx = nextIdx;
+      b.myPokemon = b.battleTeam[nextIdx];
+      b.log.push(`¡Adelante, ${b.myPokemon.name}!`);
+      b.logIdx = b.log.length - 1;
+      b.phase = 'fighting';
+      b.pendingMove = null;
       saveState();
       renderBattle();
+      startRivalTimer();
+    } else {
+      // All fainted
+      b.logIdx = b.log.length - 1;
+      if (b.infiniteMode) { endInfiniteMode('faint'); return; }
       endBattle(false);
-      return;
     }
-    // Quedan pokémon vivos → cambio forzado
-    b.phase = 'switch';
-    saveState();
-    renderBattle();
-    openSwitchModal(true);
     return;
   }
   
   b.phase = 'fighting';
   b.pendingMove = null;
-  saveState();
-  renderBattle();
-  startRivalTimer();
-}
-
-function openSwitchModal(forced = false) {
-  const b = state.battle;
-  if (!b || !b.myTeam) return;
-  stopRivalTimer();
-  
-  const items = b.myTeam.map((p, i) => {
-    const isActive = i === b.myPokemonIdx;
-    const fainted = p.currentHp <= 0;
-    const hpPct = Math.max(0, Math.round(p.currentHp / p.maxHp * 100));
-    const hpColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-    const canSelect = !fainted && !isActive;
-    return `
-      <div onclick="${canSelect ? `switchPokemon(${i})` : ''}" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;border:1px solid ${isActive?'rgba(255,215,0,0.5)':fainted?'rgba(227,53,13,0.25)':'var(--border2)'};background:${isActive?'rgba(255,215,0,0.07)':fainted?'rgba(227,53,13,0.05)':'rgba(255,255,255,0.03)'};cursor:${canSelect?'pointer':'default'};opacity:${fainted?0.45:1};transition:all 0.15s;margin-bottom:8px;" ${canSelect?'onmouseover="this.style.background=\'rgba(255,215,0,0.1)\'" onmouseout="this.style.background=\'rgba(255,255,255,0.03)\'"':''}>
-        <img src="${p.sprite}" style="width:48px;height:48px;image-rendering:pixelated;${fainted?'filter:grayscale(1)':''}">
-        <div style="flex:1;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:${isActive?'var(--yellow)':fainted?'var(--red-light)':'var(--white)'};margin-bottom:4px;">${p.name} ${isActive?'(activo)':fainted?'(debilitado)':''}</div>
-          <div style="font-size:11px;color:var(--muted2);margin-bottom:5px;">Nv.${p.level} · HP: ${p.currentHp}/${p.maxHp}</div>
-          <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${hpPct}%;background:${hpColor};border-radius:3px;"></div></div>
-        </div>
-        ${canSelect ? `<div style="font-size:18px;opacity:0.6;">→</div>` : ''}
-      </div>
-    `;
-  }).join('');
-  
-  const title = forced ? '💀 ¡Pokémon debilitado! — Elige sustituto' : '🔄 Cambiar Pokémon';
-  openModal(title, `
-    <div style="font-size:12px;color:var(--muted2);margin-bottom:14px;">${forced ? 'Tu Pokémon se debilitó. <strong style="color:white;">Debes elegir otro</strong> para continuar.' : 'Elige el Pokémon con el que quieres continuar.'}</div>
-    ${items}
-    ${!forced ? `<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px;justify-content:center;" onclick="closeModal(); state.battle.phase='fighting'; startRivalTimer(); renderBattle();">Cancelar</button>` : ''}
-  `);
-}
-
-function switchPokemon(newIdx) {
-  const b = state.battle;
-  if (!b || !b.myTeam) return;
-  const newPokemon = b.myTeam[newIdx];
-  if (!newPokemon || newPokemon.currentHp <= 0) return;
-  
-  const oldName = b.myPokemon.name;
-  b.myPokemonIdx = newIdx;
-  b.myPokemon = b.myTeam[newIdx];
-  b.buffs = { atkTurns: 0, defTurns: 0 }; // los buffs no se transfieren
-  b.log.push(`🔄 ¡${oldName} vuelve! ¡Adelante, ${newPokemon.name}!`);
-  b.logIdx = b.log.length - 1;
-  b.phase = 'fighting';
-  b.pendingMove = null;
-  closeModal();
   saveState();
   renderBattle();
   startRivalTimer();
@@ -3392,7 +3380,7 @@ function renderEndedPanel() {
       <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:${won ? 'var(--yellow)' : 'var(--red)'}; margin-bottom:12px; line-height:1.8;">
         ${won ? '¡VICTORIA!' : 'DERROTA'}
       </div>
-      ${won ? `<div style="font-size:13px;color:var(--yellow);margin-bottom:12px;font-weight:800;">+100 🪙 ganadas!</div>` : ''}
+      ${won ? `<div style="font-size:13px;color:var(--yellow);margin-bottom:12px;font-weight:800;">+200 🪙 ganadas!</div>` : ''}
       ${b.caughtPokemon ? `
         <div style="margin-bottom:14px; padding:10px; background:rgba(61,170,86,0.1); border-radius:10px; border:1px solid rgba(61,170,86,0.3);">
           <img src="${b.caughtPokemon.sprite}" style="width:56px;height:56px;image-rendering:pixelated;">
@@ -3429,15 +3417,15 @@ function endBattle(playerWon, fled = false) {
     b.log.push('🏃 ¡Huiste de la batalla!');
     b.logIdx = b.log.length - 1;
   } else if (playerWon) {
-    // +100 monedas por victoria
+    // +200 monedas por victoria
     if (state.jugador) {
-      state.jugador.coins = (state.jugador.coins || 0) + 100;
+      state.jugador.coins = (state.jugador.coins || 0) + 200;
       updateCoinDisplay();
     }
     const expGained = b.rivalPokemon.level * 50;
     b.myPokemon.exp += expGained;
     b.log.push(`💀 ¡${b.rivalPokemon.name} se debilitó!`);
-    b.log.push(`⭐ ${b.myPokemon.name} ganó ${expGained} EXP · +100🪙`);
+    b.log.push(`⭐ ${b.myPokemon.name} ganó ${expGained} EXP · +200🪙`);
     
     if (b.myPokemon.exp >= b.myPokemon.expToNext) {
       b.myPokemon.level++;
@@ -3458,18 +3446,16 @@ function endBattle(playerWon, fled = false) {
     state.jugador.losses++;
   }
   
-  // Update entire team back to jugador
-  if (b.myTeam) {
-    b.myTeam.forEach((p, i) => {
+  // Sync current pokemon back to battleTeam
+  b.battleTeam[b.myPokemonIdx] = { ...b.battleTeam[b.myPokemonIdx], ...b.myPokemon };
+  
+  // Update entire team from battleTeam
+  if (state.jugador.team) {
+    b.battleTeam.forEach((bp, i) => {
       if (state.jugador.team[i]) {
-        state.jugador.team[i] = { ...state.jugador.team[i], ...p };
+        state.jugador.team[i] = { ...state.jugador.team[i], ...bp };
       }
     });
-  } else {
-    const myIdx = b.myPokemonIdx;
-    if (state.jugador.team[myIdx]) {
-      state.jugador.team[myIdx] = { ...state.jugador.team[myIdx], ...b.myPokemon };
-    }
   }
   
   saveState();
@@ -3491,11 +3477,12 @@ function endBattleCleanup(infiniteRespawn = false) {
     showToast(`🎉 ${b.caughtPokemon.name} añadido al equipo!`, 'success');
   }
   
-  // Guardar estado de todo el equipo
-  if (b.myTeam) {
-    b.myTeam.forEach((p, i) => {
+  // Guardar estado de todo el equipo de batalla
+  if (b.battleTeam) {
+    b.battleTeam[b.myPokemonIdx] = { ...b.battleTeam[b.myPokemonIdx], ...b.myPokemon };
+    b.battleTeam.forEach((bp, i) => {
       if (state.jugador.team[i]) {
-        state.jugador.team[i] = { ...state.jugador.team[i], ...p };
+        state.jugador.team[i] = { ...state.jugador.team[i], ...bp };
       }
     });
   } else {
@@ -3514,10 +3501,9 @@ function endBattleCleanup(infiniteRespawn = false) {
     b.caughtPokemon = null;
     b.phase = 'fighting';
     b.pendingMove = null;
-    // Restaurar HP del equipo para la siguiente batalla
-    if (b.myTeam) b.myTeam.forEach(p => { p.currentHp = p.maxHp; });
-    b.myPokemon = b.myTeam ? b.myTeam[b.myPokemonIdx] : b.myPokemon;
     b.log.push(`✨ ¡${newRival.name} [${rc?.label}] apareció!`);
+    // Reset buffs for new fight
+    b.buffs = { atkTurns:0, defTurns:0 };
     b.logIdx = b.log.length - 1;
     if (newRival.rarity === 'epic' || newRival.rarity === 'legendary') {
       showToast(`✨ ¡Apareció un ${rc.label}: ${newRival.name}!`, 'success');
@@ -3546,12 +3532,11 @@ function endInfiniteMode(reason) {
   if (!b) return;
   stopRivalTimer();
   
-  // Guardar estado de todo el equipo
-  if (b.myTeam) {
-    b.myTeam.forEach((p, i) => {
-      if (state.jugador.team[i]) {
-        state.jugador.team[i] = { ...state.jugador.team[i], ...p };
-      }
+  // Guardar estado del pokémon
+  if (b.battleTeam) {
+    b.battleTeam[b.myPokemonIdx] = { ...b.battleTeam[b.myPokemonIdx], ...b.myPokemon };
+    b.battleTeam.forEach((bp, i) => {
+      if (state.jugador.team[i]) state.jugador.team[i] = { ...state.jugador.team[i], ...bp };
     });
   } else {
     const myIdx = b.myPokemonIdx;
@@ -3581,7 +3566,7 @@ function endInfiniteMode(reason) {
           <span>✅ Respuestas correctas</span><strong>${correct}</strong>
         </div>
         <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,215,0,0.08);border-radius:8px;">
-          <span>🪙 Monedas ganadas (esta sesión)</span><strong style="color:var(--yellow);">${correct * 10}</strong>
+          <span>🪙 Monedas ganadas (esta sesión)</span><strong style="color:var(--yellow);">${correct * 20}</strong>
         </div>
         <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,215,0,0.05);border-radius:8px;">
           <span>🪙 Total de monedas</span><strong style="color:var(--yellow);">${(state.jugador.coins||0).toLocaleString()}</strong>
@@ -3631,6 +3616,7 @@ function renderJugador() {
     <div class="tabs" style="margin-bottom:24px;">
       <button class="tab-btn active" id="tabBtnPerfil" onclick="switchPerfilTab('perfil')">🎮 Perfil</button>
       <button class="tab-btn" id="tabBtnPokemon" onclick="switchPerfilTab('pokemon')">⚡ Pokémon</button>
+      <button class="tab-btn" id="tabBtnBackup" onclick="switchPerfilTab('backup')">💾 Backup</button>
     </div>
 
     <!-- ===== TAB PERFIL ===== -->
@@ -3724,14 +3710,49 @@ function renderJugador() {
         </div>`}
       </div>` : ''}
     </div>
+
+    <!-- ===== TAB BACKUP ===== -->
+    <div id="perfilTabBackup" style="display:none;">
+      <div class="player-card" style="margin-bottom:16px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:6px;">📤 Exportar progreso</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Descarga un archivo <strong style="color:white;">.json</strong> con todo tu progreso: entrenador, Pokémon, monedas, estadísticas y temarios. Guárdalo para importarlo en otro dispositivo.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-yellow" onclick="exportarProgreso()">📥 Descargar backup.json</button>
+          <button class="btn btn-ghost" onclick="copiarProgresoPortapapeles()">📋 Copiar al portapapeles</button>
+        </div>
+      </div>
+
+      <div class="player-card">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:6px;">📥 Importar progreso</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Carga un archivo de backup para restaurar tu progreso. <strong style="color:var(--red-light);">⚠️ Esto sobreescribirá tu progreso actual.</strong></div>
+        <div class="drop-zone" id="backupDropZone"
+          onclick="document.getElementById('backupFileInput').click()"
+          ondragover="event.preventDefault();this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="handleBackupDrop(event)">
+          <div style="font-size:32px;margin-bottom:8px;">📂</div>
+          <div style="font-size:13px;font-weight:700;color:var(--muted2);">Haz clic o arrastra tu backup.json aquí</div>
+        </div>
+        <input type="file" id="backupFileInput" accept=".json" style="display:none" onchange="handleBackupFile(event)">
+        <div style="margin:16px 0;display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <span style="font-size:11px;color:var(--muted);">o pega el JSON</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <textarea class="textarea" id="backupPasteArea" placeholder='Pega aquí el contenido del backup.json...' style="min-height:100px;font-family:monospace;font-size:11px;"></textarea>
+        <button class="btn btn-primary" style="width:100%;margin-top:10px;justify-content:center;" onclick="importarProgresoDesdeTexto()">📥 Importar desde texto</button>
+      </div>
+    </div>
   `;
 }
 
 function switchPerfilTab(tab) {
   document.getElementById('perfilTabPerfil').style.display = tab === 'perfil' ? 'block' : 'none';
   document.getElementById('perfilTabPokemon').style.display = tab === 'pokemon' ? 'block' : 'none';
+  document.getElementById('perfilTabBackup').style.display = tab === 'backup' ? 'block' : 'none';
   document.getElementById('tabBtnPerfil').classList.toggle('active', tab === 'perfil');
   document.getElementById('tabBtnPokemon').classList.toggle('active', tab === 'pokemon');
+  document.getElementById('tabBtnBackup').classList.toggle('active', tab === 'backup');
 }
 
 
@@ -3742,7 +3763,9 @@ function swapToBox(teamIdx) {
   const [p] = j.team.splice(teamIdx, 1);
   j.box.push(p);
   saveState();
+  const activeTab = document.getElementById('perfilTabPokemon')?.style.display !== 'none' ? 'pokemon' : 'perfil';
   renderJugador();
+  if (activeTab === 'pokemon') switchPerfilTab('pokemon');
   showToast(`${p.name} enviado a la caja`, 'info');
 }
 
@@ -3753,7 +3776,9 @@ function addToTeamFromBox(boxIdx) {
   const [p] = j.box.splice(boxIdx, 1);
   j.team.push(p);
   saveState();
+  const activeTab = document.getElementById('perfilTabPokemon')?.style.display !== 'none' ? 'pokemon' : 'perfil';
   renderJugador();
+  if (activeTab === 'pokemon') switchPerfilTab('pokemon');
   showToast(`¡${p.name} se unió al equipo!`, 'success');
 }
 
@@ -3801,6 +3826,104 @@ function resetGame() {
 }
 
 // ============================================================
+// BACKUP — EXPORTAR / IMPORTAR
+// ============================================================
+function exportarProgreso() {
+  const backup = {
+    _version: 1,
+    _exportedAt: new Date().toISOString(),
+    jugador: state.jugador,
+    temarios: state.temarios,
+  };
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const nombre = (state.jugador?.name || 'entrenador').replace(/\s+/g, '_').toLowerCase();
+  a.href = url;
+  a.download = `pokestudy_backup_${nombre}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ Backup descargado correctamente', 'success');
+}
+
+function copiarProgresoPortapapeles() {
+  const backup = {
+    _version: 1,
+    _exportedAt: new Date().toISOString(),
+    jugador: state.jugador,
+    temarios: state.temarios,
+  };
+  navigator.clipboard.writeText(JSON.stringify(backup, null, 2))
+    .then(() => showToast('📋 Backup copiado al portapapeles', 'success'))
+    .catch(() => showToast('No se pudo copiar — usa "Descargar"', 'error'));
+}
+
+function handleBackupDrop(e) {
+  e.preventDefault();
+  document.getElementById('backupDropZone')?.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) _leerArchivoBackup(file);
+}
+
+function handleBackupFile(e) {
+  const file = e.target.files[0];
+  if (file) _leerArchivoBackup(file);
+}
+
+function _leerArchivoBackup(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      _aplicarBackup(data);
+    } catch(e) {
+      showToast('❌ Archivo inválido: no es un JSON válido', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function importarProgresoDesdeTexto() {
+  const text = document.getElementById('backupPasteArea')?.value?.trim();
+  if (!text) { showToast('Pega el JSON primero', 'error'); return; }
+  try {
+    const data = JSON.parse(text);
+    _aplicarBackup(data);
+  } catch(e) {
+    showToast('❌ JSON inválido: ' + e.message, 'error');
+  }
+}
+
+function _aplicarBackup(data) {
+  // Validar estructura mínima
+  if (!data.jugador || !data.jugador.name) {
+    showToast('❌ Backup inválido: no contiene datos de entrenador', 'error');
+    return;
+  }
+  const pokemonCount = (data.jugador.team?.length || 0) + (data.jugador.box?.length || 0);
+  const temariosCount = data.temarios?.length || 0;
+
+  if (!confirm(
+    `¿Importar el progreso de "${data.jugador.name}"?\n\n` +
+    `· ${pokemonCount} Pokémon\n` +
+    `· ${(data.jugador.coins || 0).toLocaleString()} monedas\n` +
+    `· ${temariosCount} temarios\n\n` +
+    `⚠️ Tu progreso actual se perderá.`
+  )) return;
+
+  state.jugador = data.jugador;
+  state.temarios = Array.isArray(data.temarios) ? data.temarios : [];
+  state.battle = null;
+  migrateState();
+  saveState();
+  renderAll();
+  showSection('jugador');
+  setTimeout(() => switchPerfilTab('perfil'), 50);
+  showToast(`✅ Progreso de "${data.jugador.name}" importado correctamente`, 'success');
+}
+
+// ============================================================
 // TIENDA
 // ============================================================
 function renderTienda() {
@@ -3829,7 +3952,7 @@ function renderTienda() {
         <div style="font-family:'Press Start 2P',monospace; font-size:20px; color:var(--yellow);">${(j.coins||0).toLocaleString()}</div>
       </div>
       <div style="margin-left:auto; font-size:12px; color:var(--muted2); text-align:right; line-height:1.8;">
-        +25 🪙 por pregunta correcta<br>+100 🪙 por victoria en batalla
+        +10 🪙 por pregunta correcta<br>+100 🪙 por victoria en batalla
       </div>
     </div>
 
